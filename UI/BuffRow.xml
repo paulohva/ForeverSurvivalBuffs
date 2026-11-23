@@ -1,0 +1,51 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<!-- one buff in the buffs window: check box, icon, name and whether it's on you -->
+	<Frame name="ForeverSurvivalBuffsRowTemplate" virtual="true">
+		<Size x="300" y="26"/>
+		<Layers>
+			<Layer level="ARTWORK">
+				<Texture parentKey="Icon">
+					<Size x="20" y="20"/>
+					<Anchors>
+						<Anchor point="LEFT" x="32" y="0"/>
+					</Anchors>
+					<TexCoords left="0.08" right="0.92" top="0.08" bottom="0.92"/>
+				</Texture>
+				<FontString parentKey="Status" inherits="GameFontHighlightSmall" justifyH="RIGHT" wordwrap="false">
+					<Size x="90" y="20"/>
+					<Anchors>
+						<Anchor point="RIGHT" x="-4" y="0"/>
+					</Anchors>
+				</FontString>
+				<FontString parentKey="Name" inherits="GameFontHighlight" justifyH="LEFT" wordwrap="false">
+					<Anchors>
+						<Anchor point="LEFT" relativeKey="$parent.Icon" relativePoint="RIGHT" x="6" y="0"/>
+						<Anchor point="RIGHT" relativeKey="$parent.Status" relativePoint="LEFT" x="-4" y="0"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+		<Frames>
+			<CheckButton parentKey="Check" inherits="UICheckButtonTemplate">
+				<Size x="24" y="24"/>
+				<Anchors>
+					<Anchor point="LEFT" x="4" y="0"/>
+				</Anchors>
+			</CheckButton>
+		</Frames>
+	</Frame>
+
+	<!-- a section title in the buffs window -->
+	<Frame name="ForeverSurvivalBuffsHeaderTemplate" virtual="true">
+		<Size x="300" y="26"/>
+		<Layers>
+			<Layer level="ARTWORK">
+				<FontString parentKey="Text" inherits="GameFontNormal" justifyH="LEFT">
+					<Anchors>
+						<Anchor point="BOTTOMLEFT" x="6" y="4"/>
+					</Anchors>
+				</FontString>
+			</Layer>
+		</Layers>
+	</Frame>
+</Ui>
