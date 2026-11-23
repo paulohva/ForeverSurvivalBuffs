@@ -1,0 +1,29 @@
+# Changelog
+
+All notable changes to ForeverSurvivalBuffs are listed here.
+
+## Unreleased
+
+## 1.1.0
+
+- Fixed the Lua error "Auras cannot be accessed when secret while tainted": in combat and in some
+  instances the game hides your buffs from addons. The addon no longer reads them then, and keeps
+  what it last saw until you can be checked again.
+- Choose your buffs: besides Well Fed, the camp buff and the sleeping bag, you can tick the buffs of
+  your class that stay on you (Arcane Intellect, the mage armors, Ice Barrier, Inner Fire, Power Word:
+  Fortitude, Battle Shout, blessings, aspects and more) and the temporary enhancements on your
+  weapons (sharpening stones, oils, poisons, shaman imbues). The three survival buffs are still on by
+  default, and each can be turned off. Choices are kept per class.
+- A window lists every buff you can choose, with whether it's on you right now.
+- Minimap button: left-click opens the buffs window, right-click the options. The same in the
+  game's AddOns menu.
+- An options panel (Options > AddOns > ForeverSurvivalBuffs): turn the reminders off, hide them in
+  combat (on by default), unlock to place them, icon size, reset the position, the minimap button.
+- The sleeping bag reminder no longer shows at the maximum level (it only gives experience).
+- The reminders keep their position from 1.0.x. Slash command `/fsb` (`/fsb help` lists the rest);
+  `/sb` and `/fbr` are gone.
+- English and Português (Brasil).
+
+## 1.0.0
+
+- First release (CurseForge only): reminders for Well Fed, the camp buff and the Cozy Sleeping Bag.

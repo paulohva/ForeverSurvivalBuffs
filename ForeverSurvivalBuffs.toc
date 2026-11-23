@@ -1,0 +1,27 @@
+## Interface: 16001
+## Title: ForeverSurvivalBuffs
+## Notes: Reminds you of the buffs you're missing: Well Fed, camp, sleeping bag, and the class buffs and weapon enhancements you choose.
+## Notes-ptBR: Lembra os buffs que estão faltando: Bem Alimentado, acampamento, saco de dormir e os buffs de classe e melhorias de arma que você escolher.
+## Author: zul_moletom
+## Version: @project-version@
+## X-License: MIT
+## X-Website: https://github.com/paulohva/ForeverSurvivalBuffs
+## X-Curse-Project-ID: 1825017
+## Category: Buffs & Debuffs
+## SavedVariables: ForeverSurvivalBuffsDB
+## IconTexture: Interface\AddOns\ForeverSurvivalBuffs\Media\Icon
+## AddonCompartmentFunc: ForeverSurvivalBuffs_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: ForeverSurvivalBuffs_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: ForeverSurvivalBuffs_OnAddonCompartmentLeave
+
+Core.lua
+Locales.lua
+Catalog.lua
+Auras.lua
+Tracker.lua
+UI\Reminders.lua
+UI\BuffRow.xml
+UI\BuffWindow.lua
+Minimap.lua
+Settings.lua
+Slash.lua
