@@ -14,10 +14,10 @@ shows when you have them all.
 
 Choices are kept per class. Any default can be turned off.
 
-**Another list in dungeons and raids** (optional): tick it at the bottom of the buffs window, and
-inside a dungeon or raid the addon switches to its own list by itself, for example class buffs only,
-without the camp and the sleeping bag. It starts as a copy of the usual list; the window's two tabs
-choose which list you change.
+**Dungeons and raids** have their own list: the buffs window's two tabs, *Outside* and *Dungeons and
+raids*, choose which one you change, and the addon switches between them by itself when you go in and
+out. For example, class buffs only in dungeons, without the camp and the sleeping bag. Until you
+change it, the dungeon list is the same as the other one.
 
 ## How to use
 

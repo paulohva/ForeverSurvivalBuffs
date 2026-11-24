@@ -164,8 +164,7 @@ end
 -- Saved data
 --   ForeverSurvivalBuffsDB = {
 --     version, debug,
---     settings = { enabled, locked, hideInCombat, iconSize, minimapHidden, minimapAngle,
---                  instanceProfile },                  -- another list in dungeons and raids
+--     settings = { enabled, locked, hideInCombat, iconSize, minimapHidden, minimapAngle },
 --     position = { point, relPoint, x, y },             -- the reminders
 --     windowPosition = { point, relPoint, x, y },       -- the buffs window
 --     campIcon,                                         -- the camp buff's icon, once seen
@@ -181,7 +180,6 @@ ns.DEFAULTS = {
 	locked = true,
 	hideInCombat = true,
 	iconSize = 32,
-	instanceProfile = false,
 }
 
 -- 1.0.x kept the position as loose fields (point, relPoint, x, y) and a `disabled` flag

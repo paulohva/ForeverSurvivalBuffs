@@ -54,11 +54,9 @@ if locale == "ptBR" then
 	L["Outside"] = "Fora"
 	L["Dungeons and raids"] = "Masmorras e raides"
 	L[" (now)"] = " (agora)"
-	L["The buffs to be reminded of inside dungeons and raids."] = "Os buffs a lembrar dentro de masmorras e raides."
+	L["The buffs to be reminded of inside dungeons and raids. Until you change it, it's the same as the other list."] =
+		"Os buffs a lembrar dentro de masmorras e raides. Enquanto não a mudar, é igual à outra lista."
 	L["The buffs to be reminded of everywhere else."] = "Os buffs a lembrar em todos os outros lugares."
-	L["Another list in dungeons and raids"] = "Outra lista em masmorras e raides"
-	L["Inside a dungeon or raid the addon switches to its own list of buffs. It starts as a copy of the usual one."] =
-		"Dentro de uma masmorra ou raide o addon passa a usar uma lista própria de buffs. Ela começa como cópia da lista normal."
 
 	-- minimap button and menu
 	L["Reminders are off."] = "Lembretes desligados."

@@ -6,9 +6,9 @@ All notable changes to ForeverSurvivalBuffs are listed here.
 
 ## 1.1.2
 
-- Another list in dungeons and raids: turn it on in the buffs window or the options, and inside a
-  dungeon or raid the addon switches to its own list of buffs by itself. The list starts as a copy of
-  the usual one; two tabs in the window choose which list you change.
+- A list of buffs for dungeons and raids: the buffs window has two tabs, "Outside" and "Dungeons and
+  raids", and the addon switches between the two lists by itself when you go in and out. Until you
+  change it, the dungeon list is the same as the other one.
 
 ## 1.1.1
 

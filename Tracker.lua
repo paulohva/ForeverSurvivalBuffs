@@ -39,9 +39,9 @@ local CAMP_EXCEPT = { "campfire", "fogueira" }
 --------------------------------------------------------------------------------
 -- Chosen buffs, per class and per profile:
 --   "world"     the usual list (ns.db.classes)
---   "instance"  dungeons and raids, when the player turns that list on
---               (ns.db.instanceClasses). Until it's first changed it is the
---               world list; then it starts as a copy of it and goes its own way.
+--   "instance"  dungeons and raids (ns.db.instanceClasses). Until it's first
+--               changed it is the world list; then it starts as a copy of it
+--               and goes its own way.
 --------------------------------------------------------------------------------
 
 local INSTANCE_TYPES = { party = true, raid = true }
@@ -53,7 +53,7 @@ end
 
 -- the profile in use right now
 function Tracker.Profile()
-	if ns.db and ns.db.settings.instanceProfile and Tracker.InInstance() then return "instance" end
+	if Tracker.InInstance() then return "instance" end
 	return "world"
 end
 
@@ -96,13 +96,6 @@ function Tracker.SetChosen(entry, chosen, profile)
 	if not choices then return end
 	choices[entry.key] = chosen and true or false
 	Tracker.Update()
-end
-
-function Tracker.SetInstanceProfile(on)
-	if not ns.db then return end
-	ns.db.settings.instanceProfile = on and true or false
-	Tracker.Update()
-	if Settings and Settings.NotifyUpdate then pcall(Settings.NotifyUpdate, "ForeverSurvivalBuffs_instanceProfile") end
 end
 
 --------------------------------------------------------------------------------
