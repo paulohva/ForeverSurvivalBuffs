@@ -4,6 +4,11 @@ All notable changes to ForeverSurvivalBuffs are listed here.
 
 ## Unreleased
 
+## 1.1.6
+
+- The buffs window's round portrait shows the whole cheese instead of a close-up.
+  (It's a new file: restart the game after updating, a /reload isn't enough.)
+
 ## 1.1.5
 
 - New icon: a single cheese wedge, easier to make out at small sizes (minimap button, buffs window,
