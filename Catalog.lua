@@ -231,13 +231,19 @@ function Catalog.Name(entry)
 	if entry.kind == "weapon" then
 		return ("%s (%s)"):format(L[WEAPON_STUFF[entry.stuff].label], SlotText(entry.slot))
 	end
+	-- rank 1 of each spell, then the learned ranks whose name is different
+	-- ("Inteligência Arcana / Intelecto Arcano")
 	local names, seen = {}, {}
-	for _, id in ipairs(entry.spells) do
+	local function Add(id)
 		local name = Catalog.SpellName(id)
 		if name and not seen[name] then
 			seen[name] = true
 			table.insert(names, name)
 		end
+	end
+	for _, id in ipairs(entry.spells) do Add(id) end
+	for _, id in ipairs(entry.ranks or {}) do
+		if ns.Tracker and ns.Tracker.KnowsSpell(id) then Add(id) end
 	end
 	return #names > 0 and table.concat(names, " / ") or ("spell " .. entry.spells[1])
 end
