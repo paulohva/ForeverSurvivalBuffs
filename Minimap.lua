@@ -5,7 +5,7 @@
 --------------------------------------------------------------------------------
 
 local _, ns = ...
-local L, Catalog, Tracker = ns.L, ns.Catalog, ns.Tracker
+local L = ns.L
 
 local MinimapButton = {}
 ns.MinimapButton = MinimapButton
@@ -34,17 +34,6 @@ end
 
 local function FillTooltip(tooltip)
 	tooltip:AddLine(ns.NAME)
-	local missing = Tracker.missing
-	if not ns.db.settings.enabled then
-		tooltip:AddLine(L["Reminders are off."], 0.6, 0.6, 0.6)
-	elseif #missing == 0 then
-		tooltip:AddLine(L["All your buffs are up."], 0.25, 1, 0.25)
-	else
-		for _, entry in ipairs(missing) do
-			tooltip:AddLine(L["Missing: %s"]:format(Catalog.Name(entry)), 1, 0.3, 0.3)
-		end
-	end
-	tooltip:AddLine(" ")
 	tooltip:AddLine(L["Left-click: choose your buffs"], 0.5, 0.5, 0.5)
 	tooltip:AddLine(L["Right-click: options"], 0.5, 0.5, 0.5)
 end

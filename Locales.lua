@@ -34,7 +34,7 @@ if locale == "ptBR" then
 	L["Missing: %s"] = "Falta: %s"
 	L["Alt + drag to move."] = "Alt + arrastar para mover."
 	L["Drag to move. Lock it in the options when done."] = "Arraste para mover. Depois trave nas opções."
-	L["Right-click: choose your buffs"] = "Botão direito: escolher os seus buffs"
+	L["Right-click: choose your buffs"] = "Clique direito: escolher os seus buffs"
 	L["ForeverSurvivalBuffs: drag to move"] = "ForeverSurvivalBuffs: arraste para mover"
 
 	-- buffs window
@@ -59,10 +59,8 @@ if locale == "ptBR" then
 	L["The buffs to be reminded of everywhere else."] = "Os buffs a lembrar em todos os outros lugares."
 
 	-- minimap button and menu
-	L["Reminders are off."] = "Lembretes desligados."
-	L["All your buffs are up."] = "Todos os seus buffs estão ativos."
-	L["Left-click: choose your buffs"] = "Clique: escolher os seus buffs"
-	L["Right-click: options"] = "Botão direito: opções"
+	L["Left-click: choose your buffs"] = "Clique esquerdo: escolher os seus buffs"
+	L["Right-click: options"] = "Clique direito: opções"
 	L["Choose your buffs..."] = "Escolher os seus buffs..."
 	L["Show reminders"] = "Mostrar lembretes"
 	L["Hide in combat"] = "Esconder em combate"

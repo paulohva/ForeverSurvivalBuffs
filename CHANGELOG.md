@@ -4,6 +4,11 @@ All notable changes to ForeverSurvivalBuffs are listed here.
 
 ## Unreleased
 
+## 1.1.3
+
+- Simpler minimap button tooltip: just the name and what the left and right clicks do.
+- Portuguese: "Clique esquerdo" and "Clique direito" in the tooltips.
+
 ## 1.1.2
 
 - A list of buffs for dungeons and raids: the buffs window has two tabs, "Outside" and "Dungeons and
