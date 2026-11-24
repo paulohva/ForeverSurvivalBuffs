@@ -4,6 +4,11 @@ All notable changes to ForeverSurvivalBuffs are listed here.
 
 ## Unreleased
 
+## 1.1.4
+
+- The reminders start a little lower, so they don't cover your character. If you never moved them
+  they move by themselves; otherwise use the Reset button in the options or `/fsb reset`.
+
 ## 1.1.3
 
 - Simpler minimap button tooltip: just the name and what the left and right clicks do.
