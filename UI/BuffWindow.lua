@@ -181,7 +181,7 @@ local function Build()
 
 	if frame.SetTitle then frame:SetTitle(ns.NAME)
 	elseif frame.TitleText then frame.TitleText:SetText(ns.NAME) end
-	if frame.SetPortraitToAsset then pcall(frame.SetPortraitToAsset, frame, ns.ICON) end
+	if frame.SetPortraitToAsset then pcall(frame.SetPortraitToAsset, frame, ns.PORTRAIT) end
 
 	local help = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
 	help:SetPoint("TOPLEFT", frame, "TOPLEFT", 64, -30)

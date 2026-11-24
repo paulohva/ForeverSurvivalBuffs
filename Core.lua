@@ -7,6 +7,9 @@ local ADDON, ns = ...
 ns.NAME = "ForeverSurvivalBuffs"
 ns.ACCENT = "ffd100"   -- Blizzard gold
 ns.ICON = "Interface\\AddOns\\ForeverSurvivalBuffs\\Media\\Icon"
+-- the buffs window's round portrait only shows the middle of its texture: the same
+-- cheese, smaller, with more background around it
+ns.PORTRAIT = "Interface\\AddOns\\ForeverSurvivalBuffs\\Media\\Portrait"
 
 local DB_VERSION = 2
 
