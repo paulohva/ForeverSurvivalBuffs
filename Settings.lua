@@ -86,6 +86,9 @@ local function Build()
 	Try(AddHeader, layout, L["Buffs"])
 	Try(AddButton, layout, L["Buffs to remind"], L["Choose..."], function() ns.BuffWindow.Toggle() end,
 		L["Tick the survival buffs, class buffs and weapon enhancements you want to be reminded of."])
+	Try(AddProxyCheckbox, "instanceProfile", L["Another list in dungeons and raids"],
+		L["Inside a dungeon or raid the addon switches to its own list of buffs. It starts as a copy of the usual one."],
+		false, function() return s.instanceProfile end, function(value) ns.Tracker.SetInstanceProfile(value) end)
 
 	Try(AddHeader, layout, L["Reminders"])
 	Try(AddProxyCheckbox, "enabled", L["Show reminders"],

@@ -51,6 +51,14 @@ if locale == "ptBR" then
 	L["Not available"] = "Indisponível"
 	L["Buffs can't be read right now (combat or instance); this is what was last seen."] =
 		"Os buffs não podem ser lidos agora (combate ou instância); isto é o que foi visto por último."
+	L["Outside"] = "Fora"
+	L["Dungeons and raids"] = "Masmorras e raides"
+	L[" (now)"] = " (agora)"
+	L["The buffs to be reminded of inside dungeons and raids."] = "Os buffs a lembrar dentro de masmorras e raides."
+	L["The buffs to be reminded of everywhere else."] = "Os buffs a lembrar em todos os outros lugares."
+	L["Another list in dungeons and raids"] = "Outra lista em masmorras e raides"
+	L["Inside a dungeon or raid the addon switches to its own list of buffs. It starts as a copy of the usual one."] =
+		"Dentro de uma masmorra ou raide o addon passa a usar uma lista própria de buffs. Ela começa como cópia da lista normal."
 
 	-- minimap button and menu
 	L["Reminders are off."] = "Lembretes desligados."

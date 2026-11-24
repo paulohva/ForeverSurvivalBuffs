@@ -164,11 +164,13 @@ end
 -- Saved data
 --   ForeverSurvivalBuffsDB = {
 --     version, debug,
---     settings = { enabled, locked, hideInCombat, iconSize, minimapHidden, minimapAngle },
+--     settings = { enabled, locked, hideInCombat, iconSize, minimapHidden, minimapAngle,
+--                  instanceProfile },                  -- another list in dungeons and raids
 --     position = { point, relPoint, x, y },             -- the reminders
 --     windowPosition = { point, relPoint, x, y },       -- the buffs window
 --     campIcon,                                         -- the camp buff's icon, once seen
 --     classes = { [CLASS] = { [buffKey] = true/false } },  -- the buffs chosen, per class
+--     instanceClasses = { ... },                        -- the same, for dungeons and raids
 --   }
 -- A buff missing from `classes` uses its default (on for the survival buffs, off
 -- for the class buffs), so new buffs in later versions just show up.
@@ -179,6 +181,7 @@ ns.DEFAULTS = {
 	locked = true,
 	hideInCombat = true,
 	iconSize = 32,
+	instanceProfile = false,
 }
 
 -- 1.0.x kept the position as loose fields (point, relPoint, x, y) and a `disabled` flag
@@ -202,6 +205,7 @@ local function InitDB()
 		if db.settings[key] == nil then db.settings[key] = value end
 	end
 	db.classes = type(db.classes) == "table" and db.classes or {}
+	db.instanceClasses = type(db.instanceClasses) == "table" and db.instanceClasses or {}
 	ForeverSurvivalBuffsDB = db
 	ns.db = db
 end

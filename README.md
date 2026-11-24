@@ -14,6 +14,11 @@ shows when you have them all.
 
 Choices are kept per class. Any default can be turned off.
 
+**Another list in dungeons and raids** (optional): tick it at the bottom of the buffs window, and
+inside a dungeon or raid the addon switches to its own list by itself, for example class buffs only,
+without the camp and the sleeping bag. It starts as a copy of the usual list; the window's two tabs
+choose which list you change.
+
 ## How to use
 
 - **Minimap button:** left-click opens the buffs window (tick what you want to be reminded of),

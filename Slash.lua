@@ -20,6 +20,8 @@ local function Diag()
 	Line("class: %s, level %s", tostring(Catalog.PlayerClass()), tostring(Safe.Call(UnitLevel, "player")))
 	Line("C_Secrets: %s, auras secret now: %s", C_Secrets and "present" or "missing", tostring(Auras.AreSecret()))
 	Line("in combat: %s", tostring(Safe.InCombat()))
+	Line("instance: %s, dungeon list: %s, list in use: %s", tostring((select(2, Safe.CallAll(IsInInstance)))),
+		tostring(ns.db.settings.instanceProfile), Tracker.Profile())
 
 	local snap = Auras.Snapshot()
 	if not snap then

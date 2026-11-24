@@ -4,6 +4,12 @@ All notable changes to ForeverSurvivalBuffs are listed here.
 
 ## Unreleased
 
+## 1.1.2
+
+- Another list in dungeons and raids: turn it on in the buffs window or the options, and inside a
+  dungeon or raid the addon switches to its own list of buffs by itself. The list starts as a copy of
+  the usual one; two tabs in the window choose which list you change.
+
 ## 1.1.1
 
 - Class buffs are recognised at every rank, also when the game names the higher ranks differently.

@@ -1,7 +1,8 @@
 --------------------------------------------------------------------------------
 -- The buffs window: every buff this character can be reminded of, each with a
 -- check box. The survival buffs come ticked; the class buffs and weapon
--- enhancements are ticked by the player. Choices are kept per class.
+-- enhancements are ticked by the player. Choices are kept per class, and with
+-- "Another list in dungeons and raids" on, two tabs choose which list to change.
 -- Opened from the minimap button, the AddOns menu, a reminder's right-click or /fsb.
 --------------------------------------------------------------------------------
 
@@ -14,7 +15,11 @@ ns.BuffWindow = Window
 local WIDTH, HEIGHT = 360, 480
 local ROW_HEIGHT = 26
 
-local frame, scrollBox
+local TAB_HEIGHT = 22
+local TAB_WIDTH = 166   -- two side by side in the list area (about 350 wide)
+
+local frame, scrollBox, tabs, instanceCheck
+local editing = "world"   -- the list the check boxes change: "world" or "instance"
 
 local STATUS = {
 	active = { "Active", 0.25, 1, 0.25 },
@@ -46,8 +51,34 @@ local function Items()
 	return items
 end
 
+-- the two lists, as tabs above the buffs, when the dungeon list is on
+local TAB_TEXT = { world = "Outside", instance = "Dungeons and raids" }
+
+local function LayoutTabs()
+	local on = ns.db.settings.instanceProfile and true or false
+	if not on then editing = "world" end
+	instanceCheck:SetChecked(on)
+	local inset = frame.Inset or frame
+	scrollBox:SetPoint("TOPLEFT", inset, "TOPLEFT", 4, on and -(TAB_HEIGHT + 8) or -4)
+	local current = Tracker.Profile()
+	for profile, tab in pairs(tabs) do
+		tab:SetShown(on)
+		local text = L[TAB_TEXT[profile]]
+		if profile == current then text = text .. L[" (now)"] end
+		tab:SetText(text)
+		if profile == editing then
+			tab:LockHighlight()
+			tab:GetFontString():SetTextColor(1, 0.82, 0)
+		else
+			tab:UnlockHighlight()
+			tab:GetFontString():SetTextColor(1, 1, 1)
+		end
+	end
+end
+
 function Window.Refresh()
 	if not (frame and frame:IsShown()) then return end
+	LayoutTabs()
 	scrollBox:SetDataProvider(CreateDataProvider(Items()), ScrollBoxConstants and ScrollBoxConstants.RetainScrollPosition)
 end
 
@@ -83,9 +114,9 @@ local function InitRow(row, item)
 	local text, r, g, b = StatusText(entry)
 	row.Status:SetText(text)
 	row.Status:SetTextColor(r, g, b)
-	row.Check:SetChecked(Tracker.IsChosen(entry))
+	row.Check:SetChecked(Tracker.IsChosen(entry, editing))
 	row.Check:SetScript("OnClick", function(self)
-		Tracker.SetChosen(entry, self:GetChecked())
+		Tracker.SetChosen(entry, self:GetChecked(), editing)
 	end)
 	row:EnableMouse(true)
 	row:SetScript("OnEnter", RowTooltip)
@@ -147,7 +178,56 @@ local function Build()
 	end)
 	ScrollUtil.InitScrollBoxListWithScrollBar(scrollBox, scrollBar, view)
 
+	-- the lists' tabs
+	tabs = {}
+	for i, profile in ipairs({ "world", "instance" }) do
+		local tab = CreateFrame("Button", nil, inset, "UIPanelButtonTemplate")
+		tab:SetSize(TAB_WIDTH, TAB_HEIGHT)
+		if i == 1 then
+			tab:SetPoint("TOPLEFT", inset, "TOPLEFT", 6, -4)
+		else
+			tab:SetPoint("TOPRIGHT", inset, "TOPRIGHT", -6, -4)
+		end
+		tab:SetScript("OnClick", function()
+			editing = profile
+			Window.Refresh()
+		end)
+		tab:SetScript("OnEnter", function(self)
+			GameTooltip:SetOwner(self, "ANCHOR_TOP")
+			GameTooltip:AddLine(profile == "instance"
+				and L["The buffs to be reminded of inside dungeons and raids."]
+				or L["The buffs to be reminded of everywhere else."], 1, 1, 1, true)
+			GameTooltip:Show()
+		end)
+		tab:SetScript("OnLeave", function() GameTooltip:Hide() end)
+		tab:Hide()
+		tabs[profile] = tab
+	end
+
+	-- the switch for the dungeon list, below the buffs
+	instanceCheck = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
+	instanceCheck:SetSize(24, 24)
+	instanceCheck:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 6, 1)
+	local checkText = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	checkText:SetPoint("LEFT", instanceCheck, "RIGHT", 2, 1)
+	checkText:SetText(L["Another list in dungeons and raids"])
+	instanceCheck:SetScript("OnClick", function(self)
+		local on = self:GetChecked() and true or false
+		editing = on and "instance" or "world"
+		Tracker.SetInstanceProfile(on)
+		Window.Refresh()
+	end)
+	instanceCheck:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_TOP")
+		GameTooltip:AddLine(L["Another list in dungeons and raids"], 1, 0.82, 0)
+		GameTooltip:AddLine(L["Inside a dungeon or raid the addon switches to its own list of buffs. It starts as a copy of the usual one."],
+			1, 1, 1, true)
+		GameTooltip:Show()
+	end)
+	instanceCheck:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
 	frame:SetScript("OnShow", function()
+		editing = Tracker.Profile()
 		Tracker.Update()
 		Window.Refresh()
 	end)
