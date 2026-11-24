@@ -8,6 +8,7 @@
 -- name, so an aura counts when its name matches (in any language) or its ID does.
 --   spells: the player's own spells; the buff can be chosen once one is learned
 --   also:   other spells whose aura counts too (the group versions, for example)
+--   ranks:  the higher ranks (see RANKS)
 --------------------------------------------------------------------------------
 
 local _, ns = ...
@@ -124,8 +125,51 @@ local WEAPONS = {
 	WARLOCK = Weapons("oil"),
 }
 
+-- the higher ranks (and the group versions' ranks). Their auras count by ID and by
+-- name: the Forever's translations don't always give every rank the same name
+-- (rank 1 "Inteligência Arcana", the others "Intelecto Arcano").
+local RANKS = {
+	arcaneIntellect = { 1460, 1461, 10156, 10157 },
+	frostArmor = { 7300, 7301, 7320, 10219, 10220 },
+	mageArmor = { 22782, 22783 },
+	iceBarrier = { 13031, 13032, 13033 },
+	manaShield = { 8494, 8495, 10191, 10192, 10193 },
+	dampenMagic = { 8450, 8451, 10173, 10174 },
+	amplifyMagic = { 8455, 10169, 10170 },
+	fireWard = { 8457, 8458, 10223, 10225 },
+	frostWard = { 8461, 8462, 10177, 28609 },
+	fortitude = { 1244, 1245, 2791, 10937, 10938, 21564 },
+	innerFire = { 7128, 602, 1006, 10951, 10952 },
+	divineSpirit = { 14818, 14819, 27841 },
+	shadowProtection = { 10957, 10958 },
+	shield = { 592, 600, 3747, 6065, 6066, 10898, 10899, 10900, 10901 },
+	touchOfWeakness = { 19261, 19262, 19264, 19265, 19266 },
+	shadowguard = { 19308, 19309, 19310, 19311, 19312 },
+	markOfTheWild = { 5232, 6756, 5234, 8907, 9884, 9885, 21850 },
+	thorns = { 782, 1075, 8914, 9756, 9910 },
+	blessingMight = { 19834, 19835, 19836, 19837, 19838, 25291, 25916 },
+	blessingWisdom = { 19850, 19852, 19853, 19854, 25290, 25918 },
+	blessingLight = { 19978, 19979 },
+	blessingSanctuary = { 20912, 20913, 20914 },
+	devotionAura = { 10290, 643, 10291, 1032, 10292, 10293 },
+	retributionAura = { 10298, 10299, 10300, 10301 },
+	shadowResistanceAura = { 19895, 19896 },
+	frostResistanceAura = { 19897, 19898 },
+	fireResistanceAura = { 19899, 19900 },
+	trueshotAura = { 20905, 20906 },
+	aspectHawk = { 14318, 14319, 14320, 14321, 14322, 25296 },
+	aspectWild = { 20190 },
+	demonArmor = { 696, 1086, 11733, 11734, 11735 },
+	shadowWard = { 11739, 11740, 28610 },
+	battleShout = { 5242, 6192, 11549, 11550, 11551, 25289 },
+	lightningShield = { 325, 905, 945, 8134, 10431, 10432 },
+}
+
 for class, list in pairs(CLASS) do
-	for _, entry in ipairs(list) do entry.kind = "spell" end
+	for _, entry in ipairs(list) do
+		entry.kind = "spell"
+		entry.ranks = RANKS[entry.key]
+	end
 	for _, entry in ipairs(WEAPONS[class] or {}) do table.insert(list, entry) end
 end
 

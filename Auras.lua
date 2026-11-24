@@ -60,7 +60,7 @@ end
 -- or nil while auras are secret (the caller keeps its last answer).
 function Auras.Snapshot()
 	if Auras.AreSecret() then return nil end
-	local snap = { list = {}, byName = {}, byID = {} }
+	local snap = { list = {}, byName = {}, byNorm = {}, byID = {} }
 	for index = 1, MAX_AURAS do
 		if not IndexIsSecret(index) then
 			local name, spellID, icon = ReadIndex(index)
@@ -68,7 +68,10 @@ function Auras.Snapshot()
 			if name or spellID then
 				local aura = { name = name, spellID = spellID, icon = icon }
 				table.insert(snap.list, aura)
-				if name then snap.byName[name] = aura end
+				if name then
+					snap.byName[name] = aura
+					snap.byNorm[Auras.Normalize(name)] = aura
+				end
 				if spellID then snap.byID[spellID] = aura end
 			end
 		end

@@ -4,6 +4,11 @@ All notable changes to ForeverSurvivalBuffs are listed here.
 
 ## Unreleased
 
+## 1.1.1
+
+- Class buffs are recognised at every rank, also when the game names the higher ranks differently
+  (Arcane Intellect showed as missing in Portuguese).
+
 ## 1.1.0
 
 - Fixed the Lua error "Auras cannot be accessed when secret while tainted": in combat and in some
