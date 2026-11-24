@@ -4,6 +4,10 @@ All notable changes to ForeverSurvivalBuffs are listed here.
 
 ## Unreleased
 
+## 1.1.7
+
+- The cheese in the buffs window's portrait is centred in its circle.
+
 ## 1.1.6
 
 - The buffs window's round portrait shows the whole cheese instead of a close-up.
