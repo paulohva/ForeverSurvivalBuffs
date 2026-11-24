@@ -12,7 +12,7 @@ local Reminders = {}
 ns.Reminders = Reminders
 
 local GAP = 6
-local DEFAULT_Y = -180
+local DEFAULT_Y = -240   -- below the character, above the action bars
 
 local frame, label
 local buttons = {}
