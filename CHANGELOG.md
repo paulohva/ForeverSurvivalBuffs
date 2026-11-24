@@ -4,6 +4,11 @@ All notable changes to ForeverSurvivalBuffs are listed here.
 
 ## Unreleased
 
+## 1.1.5
+
+- New icon: a single cheese wedge, easier to make out at small sizes (minimap button, buffs window,
+  addon list).
+
 ## 1.1.4
 
 - The reminders start a little lower, so they don't cover your character. If you never moved them
