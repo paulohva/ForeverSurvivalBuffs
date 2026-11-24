@@ -37,29 +37,62 @@ local CAMP_KEYWORDS = {
 local CAMP_EXCEPT = { "campfire", "fogueira" }
 
 --------------------------------------------------------------------------------
--- Chosen buffs (per class)
+-- Chosen buffs, per class and per profile:
+--   "world"     the usual list (ns.db.classes)
+--   "instance"  dungeons and raids (ns.db.instanceClasses). Until it's first
+--               changed it is the world list; then it starts as a copy of it
+--               and goes its own way.
 --------------------------------------------------------------------------------
 
-local function ClassChoices(create)
-	local class = Catalog.PlayerClass()
-	if not (class and ns.db) then return nil end
-	local choices = ns.db.classes[class]
-	if not choices and create then
-		choices = {}
-		ns.db.classes[class] = choices
-	end
-	return choices
+local INSTANCE_TYPES = { party = true, raid = true }
+
+function Tracker.InInstance()
+	local inside, kind = Safe.CallAll(IsInInstance)
+	return (inside and kind and INSTANCE_TYPES[kind]) and true or false
 end
 
-function Tracker.IsChosen(entry)
-	local choices = ClassChoices(false)
+-- the profile in use right now
+function Tracker.Profile()
+	if Tracker.InInstance() then return "instance" end
+	return "world"
+end
+
+local function WorldChosen(choices, entry)
 	local value = choices and choices[entry.key]
 	if value == nil then return Catalog.IsDefault(entry) end
 	return value and true or false
 end
 
-function Tracker.SetChosen(entry, chosen)
-	local choices = ClassChoices(true)
+local function ClassChoices(profile, create)
+	local class = Catalog.PlayerClass()
+	if not (class and ns.db) then return nil end
+	local store = profile == "instance" and ns.db.instanceClasses or ns.db.classes
+	local choices = store[class]
+	if not choices and create then
+		choices = {}
+		if profile == "instance" then
+			-- start from the world list as it is now
+			local world = ns.db.classes[class]
+			for _, entry in ipairs(Catalog.All(class)) do choices[entry.key] = WorldChosen(world, entry) end
+		end
+		store[class] = choices
+	end
+	return choices
+end
+
+-- profile: "world" or "instance" (default: the one in use)
+function Tracker.IsChosen(entry, profile)
+	profile = profile or Tracker.Profile()
+	if profile == "instance" then
+		local choices = ClassChoices("instance", false)
+		local value = choices and choices[entry.key]
+		if value ~= nil then return value and true or false end
+	end
+	return WorldChosen(ClassChoices("world", false), entry)
+end
+
+function Tracker.SetChosen(entry, chosen, profile)
+	local choices = ClassChoices(profile or Tracker.Profile(), true)
 	if not choices then return end
 	choices[entry.key] = chosen and true or false
 	Tracker.Update()
@@ -212,7 +245,7 @@ ns.OnPlayer("UNIT_INVENTORY_CHANGED", Soon)   -- also when a weapon enhancement 
 for _, event in ipairs({
 	"PLAYER_ENTERING_WORLD", "PLAYER_EQUIPMENT_CHANGED", "PLAYER_REGEN_ENABLED", "PLAYER_REGEN_DISABLED",
 	"PLAYER_DEAD", "PLAYER_ALIVE", "PLAYER_UNGHOST", "BAG_UPDATE_DELAYED", "SPELLS_CHANGED",
-	"PLAYER_LEVEL_UP", "TOYS_UPDATED",
+	"PLAYER_LEVEL_UP", "TOYS_UPDATED", "ZONE_CHANGED_NEW_AREA",
 }) do
 	ns.On(event, Soon)
 end

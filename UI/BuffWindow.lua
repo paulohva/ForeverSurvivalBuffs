@@ -1,7 +1,8 @@
 --------------------------------------------------------------------------------
 -- The buffs window: every buff this character can be reminded of, each with a
 -- check box. The survival buffs come ticked; the class buffs and weapon
--- enhancements are ticked by the player. Choices are kept per class.
+-- enhancements are ticked by the player. Choices are kept per class, in two
+-- lists: one for dungeons and raids, one for everywhere else (the tabs below).
 -- Opened from the minimap button, the AddOns menu, a reminder's right-click or /fsb.
 --------------------------------------------------------------------------------
 
@@ -15,6 +16,14 @@ local WIDTH, HEIGHT = 360, 480
 local ROW_HEIGHT = 26
 
 local frame, scrollBox
+local editing = "world"   -- the list the check boxes change: "world" or "instance"
+
+-- the two lists, as tabs below the window
+local TABS = {
+	{ profile = "world", text = "Outside", tip = "The buffs to be reminded of everywhere else." },
+	{ profile = "instance", text = "Dungeons and raids",
+		tip = "The buffs to be reminded of inside dungeons and raids. Until you change it, it's the same as the other list." },
+}
 
 local STATUS = {
 	active = { "Active", 0.25, 1, 0.25 },
@@ -46,8 +55,60 @@ local function Items()
 	return items
 end
 
+-- tab texts ("(now)" on the list in use) and which tab is selected
+local function UpdateTabs()
+	local current = Tracker.Profile()
+	for i, info in ipairs(TABS) do
+		local tab = frame.Tabs[i]
+		local text = L[info.text]
+		if info.profile == current then text = text .. L[" (now)"] end
+		tab:SetText(text)
+		if PanelTemplates_TabResize then pcall(PanelTemplates_TabResize, tab, 0) end
+		if info.profile == editing then
+			if PanelTemplates_SetTab then
+				pcall(PanelTemplates_SetTab, frame, i)
+			else
+				tab:LockHighlight()
+			end
+		elseif not PanelTemplates_SetTab then
+			tab:UnlockHighlight()
+		end
+	end
+end
+
+local function CreateTabs()
+	frame.Tabs = {}
+	for i, info in ipairs(TABS) do
+		local name = "ForeverSurvivalBuffsFrameTab" .. i
+		local ok, tab = pcall(CreateFrame, "Button", name, frame, "PanelTabButtonTemplate")
+		if not ok or not tab then
+			tab = CreateFrame("Button", name, frame, "UIPanelButtonTemplate")
+			tab:SetSize(150, 22)
+		end
+		tab:SetID(i)
+		if i == 1 then
+			tab:SetPoint("TOPLEFT", frame, "BOTTOMLEFT", 11, 2)
+		else
+			tab:SetPoint("TOPLEFT", frame.Tabs[i - 1], "TOPRIGHT", 3, 0)
+		end
+		tab:SetScript("OnClick", function()
+			editing = info.profile
+			Window.Refresh()
+		end)
+		tab:SetScript("OnEnter", function(self)
+			GameTooltip:SetOwner(self, "ANCHOR_BOTTOM")
+			GameTooltip:AddLine(L[info.tip], 1, 1, 1, true)
+			GameTooltip:Show()
+		end)
+		tab:SetScript("OnLeave", function() GameTooltip:Hide() end)
+		frame.Tabs[i] = tab
+	end
+	if PanelTemplates_SetNumTabs then pcall(PanelTemplates_SetNumTabs, frame, #TABS) end
+end
+
 function Window.Refresh()
 	if not (frame and frame:IsShown()) then return end
+	UpdateTabs()
 	scrollBox:SetDataProvider(CreateDataProvider(Items()), ScrollBoxConstants and ScrollBoxConstants.RetainScrollPosition)
 end
 
@@ -83,9 +144,9 @@ local function InitRow(row, item)
 	local text, r, g, b = StatusText(entry)
 	row.Status:SetText(text)
 	row.Status:SetTextColor(r, g, b)
-	row.Check:SetChecked(Tracker.IsChosen(entry))
+	row.Check:SetChecked(Tracker.IsChosen(entry, editing))
 	row.Check:SetScript("OnClick", function(self)
-		Tracker.SetChosen(entry, self:GetChecked())
+		Tracker.SetChosen(entry, self:GetChecked(), editing)
 	end)
 	row:EnableMouse(true)
 	row:SetScript("OnEnter", RowTooltip)
@@ -147,7 +208,10 @@ local function Build()
 	end)
 	ScrollUtil.InitScrollBoxListWithScrollBar(scrollBox, scrollBar, view)
 
+	CreateTabs()
+
 	frame:SetScript("OnShow", function()
+		editing = Tracker.Profile()
 		Tracker.Update()
 		Window.Refresh()
 	end)

@@ -14,6 +14,11 @@ shows when you have them all.
 
 Choices are kept per class. Any default can be turned off.
 
+**Dungeons and raids** have their own list: the buffs window's two tabs, *Outside* and *Dungeons and
+raids*, choose which one you change, and the addon switches between them by itself when you go in and
+out. For example, class buffs only in dungeons, without the camp and the sleeping bag. Until you
+change it, the dungeon list is the same as the other one.
+
 ## How to use
 
 - **Minimap button:** left-click opens the buffs window (tick what you want to be reminded of),

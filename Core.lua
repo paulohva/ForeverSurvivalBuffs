@@ -169,6 +169,7 @@ end
 --     windowPosition = { point, relPoint, x, y },       -- the buffs window
 --     campIcon,                                         -- the camp buff's icon, once seen
 --     classes = { [CLASS] = { [buffKey] = true/false } },  -- the buffs chosen, per class
+--     instanceClasses = { ... },                        -- the same, for dungeons and raids
 --   }
 -- A buff missing from `classes` uses its default (on for the survival buffs, off
 -- for the class buffs), so new buffs in later versions just show up.
@@ -202,6 +203,7 @@ local function InitDB()
 		if db.settings[key] == nil then db.settings[key] = value end
 	end
 	db.classes = type(db.classes) == "table" and db.classes or {}
+	db.instanceClasses = type(db.instanceClasses) == "table" and db.instanceClasses or {}
 	ForeverSurvivalBuffsDB = db
 	ns.db = db
 end

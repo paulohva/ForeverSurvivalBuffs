@@ -4,6 +4,12 @@ All notable changes to ForeverSurvivalBuffs are listed here.
 
 ## Unreleased
 
+## 1.1.2
+
+- A list of buffs for dungeons and raids: the buffs window has two tabs, "Outside" and "Dungeons and
+  raids", and the addon switches between the two lists by itself when you go in and out. Until you
+  change it, the dungeon list is the same as the other one.
+
 ## 1.1.1
 
 - Class buffs are recognised at every rank, also when the game names the higher ranks differently.
