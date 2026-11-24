@@ -4,6 +4,14 @@ All notable changes to ForeverSurvivalBuffs are listed here.
 
 ## Unreleased
 
+## 1.1.1
+
+- Class buffs are recognised at every rank, also when the game names the higher ranks differently.
+  In Portuguese, rank 1 of Arcane Intellect is "Inteligência Arcana" and the others "Intelecto
+  Arcano": only rank 1 counted, so the buff showed as missing.
+- The buffs window shows the names of the ranks you learned when they differ
+  ("Inteligência Arcana / Intelecto Arcano").
+
 ## 1.1.0
 
 - Fixed the Lua error "Auras cannot be accessed when secret while tainted": in combat and in some

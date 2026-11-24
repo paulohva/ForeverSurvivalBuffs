@@ -107,11 +107,11 @@ end
 --------------------------------------------------------------------------------
 
 local function HasSpellAura(snap, entry)
-	for _, list in ipairs({ entry.spells, entry.also or {} }) do
+	for _, list in ipairs({ entry.spells, entry.also or {}, entry.ranks or {} }) do
 		for _, id in ipairs(list) do
 			if snap.byID[id] then return true end
 			local name = Catalog.SpellName(id)
-			if name and snap.byName[name] then return true end
+			if name and snap.byNorm[Auras.Normalize(name)] then return true end
 		end
 	end
 	return false
