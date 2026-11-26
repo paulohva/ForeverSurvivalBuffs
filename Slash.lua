@@ -37,8 +37,10 @@ local function Diag()
 	Line("tracked (%s):", Tracker.secret and "last seen" or "now")
 	for _, entry in ipairs(Tracker.entries) do
 		local status, reason = Tracker.Status(entry)
-		Line("  [%s] %s: %s%s", Tracker.IsChosen(entry) and "x" or " ", Catalog.Name(entry), status,
-			reason and (" (" .. reason .. ")") or "")
+		local left = Tracker.TimeLeft(entry)
+		Line("  [%s] %s: %s%s%s", Tracker.IsChosen(entry) and "x" or " ", Catalog.Name(entry), status,
+			reason and (" (" .. reason .. ")") or "",
+			left and (" (%ds left%s)"):format(left, Tracker.IsEnding(entry) and ", ending" or "") or "")
 	end
 end
 

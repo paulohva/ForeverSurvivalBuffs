@@ -115,6 +115,7 @@ end
 local function StatusText(entry)
 	local status, reason = Tracker.Status(entry)
 	if status == "unavailable" then return L[REASON[reason] or "Not available"], 0.5, 0.5, 0.5 end
+	if Tracker.IsEnding(entry) then return L["Ending soon"], 1, 0.75, 0.2 end
 	local s = STATUS[status] or STATUS.unknown
 	return L[s[1]], s[2], s[3], s[4]
 end

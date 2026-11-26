@@ -4,6 +4,12 @@ All notable changes to ForeverSurvivalBuffs are listed here.
 
 ## Unreleased
 
+## 1.2.0
+
+- Sleeping bag: 3 minutes before Well Rested runs out its reminder shows again, softly fading in
+  and out with a golden tint, so you can use the bag again in time. The tooltip says how long is
+  left, and the buffs window shows "Ending soon".
+
 ## 1.1.7
 
 - The cheese in the buffs window's portrait is centred in its circle.
