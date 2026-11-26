@@ -49,6 +49,8 @@ if locale == "ptBR" then
 	L["No sleeping bag"] = "Sem saco de dormir"
 	L["Max level"] = "Nível máximo"
 	L["Not available"] = "Indisponível"
+	L["Ending soon"] = "Acabando"
+	L["%s ends in %s"] = "%s acaba em %s"
 	L["Buffs can't be read right now (combat or instance); this is what was last seen."] =
 		"Os buffs não podem ser lidos agora (combate ou instância); isto é o que foi visto por último."
 	L["Outside"] = "Fora"

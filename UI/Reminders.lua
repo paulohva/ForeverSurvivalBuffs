@@ -1,6 +1,7 @@
 --------------------------------------------------------------------------------
 -- The reminders: one icon for each chosen buff that's missing, in a row that
--- stays centred on its spot. Nothing shows when every chosen buff is up.
+-- stays centred on its spot. Nothing shows when every chosen buff is up. A buff
+-- about to run out (the sleeping bag, 3 minutes before) shows too, fading in and out.
 -- Alt + drag moves the row; "Unlock" (options, minimap menu, /fsb unlock) shows
 -- every chosen buff so the row can be placed and dragged without Alt.
 --------------------------------------------------------------------------------
@@ -70,11 +71,20 @@ end
 -- Icons
 --------------------------------------------------------------------------------
 
+local function FormatTime(seconds)
+	seconds = math.floor(seconds + 0.5)
+	return ("%d:%02d"):format(math.floor(seconds / 60), seconds % 60)
+end
+
 local function ShowTooltip(self)
 	local entry = self.entry
 	if not entry then return end
 	GameTooltip:SetOwner(self, "ANCHOR_TOP")
-	if Opts().locked then
+	local left = Tracker.IsEnding(entry) and Tracker.TimeLeft(entry)
+	if left then
+		GameTooltip:AddLine(L["%s ends in %s"]:format(Catalog.Name(entry), FormatTime(left)), 1, 0.82, 0)
+		GameTooltip:AddLine(Catalog.Hint(entry), 1, 1, 1, true)
+	elseif Opts().locked then
 		GameTooltip:AddLine(L["Missing: %s"]:format(Catalog.Name(entry)), 1, 0.82, 0)
 		GameTooltip:AddLine(Catalog.Hint(entry), 1, 1, 1, true)
 	else
@@ -109,6 +119,16 @@ local function CreateIcon()
 	tint:SetBlendMode("ADD")
 	button.tint = tint
 
+	-- a slow, soft fade in and out: the buff is about to run out
+	local pulse = button:CreateAnimationGroup()
+	pulse:SetLooping("BOUNCE")
+	local fade = pulse:CreateAnimation("Alpha")
+	fade:SetFromAlpha(1)
+	fade:SetToAlpha(0.3)
+	fade:SetDuration(1.2)
+	if fade.SetSmoothing then fade:SetSmoothing("IN_OUT") end
+	button.pulse = pulse
+
 	button:SetScript("OnDragStart", DragStart)
 	button:SetScript("OnDragStop", DragStop)
 	button:SetScript("OnClick", function() if ns.BuffWindow then ns.BuffWindow.Toggle() end end)
@@ -117,15 +137,37 @@ local function CreateIcon()
 	return button
 end
 
--- what to show: the missing chosen buffs; while unlocked, every chosen buff that applies
+-- what to show: the chosen buffs that are missing or about to run out; while
+-- unlocked, every chosen buff that applies
 local function Shown()
-	if Opts().locked then return Tracker.missing end
+	local locked = Opts().locked
 	local list = {}
 	for _, entry in ipairs(Tracker.entries) do
-		local status = Tracker.Status(entry)
-		if Tracker.IsChosen(entry) and status ~= "unavailable" then table.insert(list, entry) end
+		if Tracker.IsChosen(entry) then
+			local status = Tracker.Status(entry)
+			if locked then
+				if status == "missing" or Tracker.IsEnding(entry) then table.insert(list, entry) end
+			elseif status ~= "unavailable" then
+				table.insert(list, entry)
+			end
+		end
 	end
 	return list
+end
+
+-- missing: red tint; about to run out: a golden tint that fades in and out
+local function Style(button, entry)
+	local ending = Tracker.IsEnding(entry)
+	if ending then
+		button.tint:SetColorTexture(1, 0.75, 0.2, 0.3)
+		button.tint:Show()
+		if not button.pulse:IsPlaying() then button.pulse:Play() end
+	else
+		button.tint:SetColorTexture(0.9, 0.2, 0.2, 0.35)
+		button.tint:SetShown(Opts().locked)
+		button.pulse:Stop()
+		button:SetAlpha(1)
+	end
 end
 
 local function ShouldHide()
@@ -149,13 +191,14 @@ function Reminders.Refresh()
 		button.entry = entry
 		button:SetSize(size, size)
 		button.icon:SetTexture(Catalog.Icon(entry))
-		button.tint:SetShown(Opts().locked)
+		Style(button, entry)
 		button:ClearAllPoints()
 		button:SetPoint("LEFT", frame, "LEFT", (i - 1) * (size + GAP), 0)
 		button:Show()
 	end
 	for i = n + 1, #buttons do
 		buttons[i]:Hide()
+		buttons[i].pulse:Stop()
 		buttons[i].entry = nil
 	end
 

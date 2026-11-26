@@ -38,35 +38,39 @@ local function IndexIsSecret(index)
 	return secret and true or false
 end
 
--- the aura at `index`: name, spellID, icon (each nil when unknown); `false` past the last one
+-- the aura at `index`: name, spellID, icon, expirationTime (each nil when unknown;
+-- expirationTime 0 = no end); `false` past the last one
 local function ReadIndex(index)
 	if C_UnitAuras and C_UnitAuras.GetAuraDataByIndex then
 		local ok, aura = pcall(C_UnitAuras.GetAuraDataByIndex, "player", index, "HELPFUL")
 		if not ok then return nil end
 		if aura == nil then return false end
-		return Safe.Field(aura, "name"), Safe.Field(aura, "spellId"), Safe.Field(aura, "icon")
+		return Safe.Field(aura, "name"), Safe.Field(aura, "spellId"), Safe.Field(aura, "icon"),
+			Safe.Field(aura, "expirationTime")
 	end
 	if UnitAura then
-		local ok, name, icon, _, _, _, _, _, _, _, spellID = pcall(UnitAura, "player", index, "HELPFUL")
+		local ok, name, icon, _, _, _, expires, _, _, _, spellID = pcall(UnitAura, "player", index, "HELPFUL")
 		if not ok then return nil end
 		if name == nil then return false end
-		return Safe.Value(name), Safe.Value(spellID), Safe.Value(icon)
+		return Safe.Value(name), Safe.Value(spellID), Safe.Value(icon), Safe.Value(expires)
 	end
 	return false
 end
 
 -- Everything on the player right now:
---   { list = { {name, spellID, icon}, ... }, byName = { [name] = aura }, byID = { [id] = aura } }
+--   { list = { {name, spellID, icon, expires}, ... }, byName = { [name] = aura }, byID = { [id] = aura } }
+-- (expires: GetTime() when it ends; nil when it doesn't end or can't be read)
 -- or nil while auras are secret (the caller keeps its last answer).
 function Auras.Snapshot()
 	if Auras.AreSecret() then return nil end
 	local snap = { list = {}, byName = {}, byNorm = {}, byID = {} }
 	for index = 1, MAX_AURAS do
 		if not IndexIsSecret(index) then
-			local name, spellID, icon = ReadIndex(index)
+			local name, spellID, icon, expires = ReadIndex(index)
 			if name == false then break end
 			if name or spellID then
-				local aura = { name = name, spellID = spellID, icon = icon }
+				if type(expires) ~= "number" or expires <= 0 then expires = nil end
+				local aura = { name = name, spellID = spellID, icon = icon, expires = expires }
 				table.insert(snap.list, aura)
 				if name then
 					snap.byName[name] = aura

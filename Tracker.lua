@@ -20,6 +20,7 @@ ns.Tracker = Tracker
 Tracker.state = {}     -- [key] = { status, reason }
 Tracker.entries = {}   -- every buff for this character, in display order
 Tracker.missing = {}   -- the chosen buffs that are missing, in display order
+Tracker.ending = {}    -- the chosen buffs about to run out (entry.warn), in display order
 Tracker.secret = false -- the last update couldn't read auras
 
 -- names to look for (lower case, without accents: see Auras.Normalize)
@@ -167,17 +168,25 @@ local function HasCamp(snap)
 	return Auras.FindKeyword(snap, CAMP_KEYWORDS, CAMP_EXCEPT) ~= nil
 end
 
-local function HasSleep(snap)
+-- the Well Rested aura, or nil
+local function SleepAura(snap)
 	for _, id in ipairs(Catalog.SLEEP_SPELLS) do
-		if snap.byID[id] then return true end
+		if snap.byID[id] then return snap.byID[id] end
 	end
-	return Auras.FindKeyword(snap, SLEEP_KEYWORDS) ~= nil
+	return Auras.FindKeyword(snap, SLEEP_KEYWORDS)
 end
 
--- status, reason
+local function Now() return Safe.Call(GetTime) or 0 end
+
+-- status, reason, expires
 local function LastSeen(entry)
 	local last = Tracker.state[entry.key]
-	if last and (last.status == "active" or last.status == "missing") then return last.status end
+	if last and last.status == "active" then
+		-- a buff known to have run out since then is missing
+		if last.expires and last.expires <= Now() then return "missing" end
+		return "active", nil, last.expires
+	end
+	if last and last.status == "missing" then return "missing" end
 	return "unknown"
 end
 
@@ -202,12 +211,40 @@ local function Evaluate(entry, snap)
 		return enhanced and "active" or "missing"
 	end
 
+	if kind == "sleep" then
+		local aura = SleepAura(snap)
+		if not aura then return "missing" end
+		return "active", nil, aura.expires
+	end
+
 	local has
 	if kind == "food" then has = HasFood(snap)
 	elseif kind == "camp" then has = HasCamp(snap)
-	elseif kind == "sleep" then has = HasSleep(snap)
 	else has = HasSpellAura(snap, entry) end
 	return has and "active" or "missing"
+end
+
+-- seconds left on an active buff that ends, or nil
+function Tracker.TimeLeft(entry)
+	local s = Tracker.state[entry.key]
+	if not (s and s.status == "active" and s.expires) then return nil end
+	return math.max(0, s.expires - Now())
+end
+
+-- an active buff with a warning (entry.warn) that ends within that many seconds
+function Tracker.IsEnding(entry)
+	local left = entry.warn and Tracker.TimeLeft(entry)
+	return left ~= nil and left <= entry.warn
+end
+
+-- look again exactly when a buff's warning starts (no game event says so)
+local warnTimers = {}
+local function ScheduleWarning(entry, expires)
+	if not (entry.warn and expires) or warnTimers[entry.key] == expires then return end
+	local delay = expires - entry.warn - Now()
+	if delay <= 0 then return end
+	warnTimers[entry.key] = expires
+	C_Timer.After(delay + 0.1, function() Tracker.Update() end)
 end
 
 function Tracker.Update()
@@ -216,15 +253,23 @@ function Tracker.Update()
 	Tracker.secret = snap == nil
 
 	local entries = Catalog.All(Catalog.PlayerClass())
-	local state, missing = {}, {}
+	local state, missing, ending = {}, {}, {}
 	for _, entry in ipairs(entries) do
-		local status, reason = Evaluate(entry, snap)
-		state[entry.key] = { status = status, reason = reason }
-		if status == "missing" and Tracker.IsChosen(entry) then table.insert(missing, entry) end
+		local status, reason, expires = Evaluate(entry, snap)
+		state[entry.key] = { status = status, reason = reason, expires = expires }
+		if status == "active" then ScheduleWarning(entry, expires) end
 	end
 	Tracker.state = state
 	Tracker.entries = entries
+	for _, entry in ipairs(entries) do
+		if Tracker.IsChosen(entry) then
+			local status = state[entry.key].status
+			if status == "missing" then table.insert(missing, entry)
+			elseif Tracker.IsEnding(entry) then table.insert(ending, entry) end
+		end
+	end
 	Tracker.missing = missing
+	Tracker.ending = ending   -- chosen buffs that are about to run out
 	ns.Fire("UPDATED")
 end
 
