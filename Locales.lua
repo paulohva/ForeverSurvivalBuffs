@@ -50,6 +50,16 @@ if locale == "ptBR" then
 	L["Max level"] = "Nível máximo"
 	L["Not available"] = "Indisponível"
 	L["Ending soon"] = "Acabando"
+	L["Warn"] = "Avisar"
+	L["Warn before it runs out"] = "Avisar antes de acabar"
+	L["The reminder shows again, fading in and out, %d min before this buff ends (set the time in the options)."] =
+		"O lembrete volta a aparecer, piscando devagar, %d min antes deste buff acabar (o tempo é definido nas opções)."
+	L["Warn before every buff runs out"] = "Avisar antes de todos os buffs acabarem"
+	L["Ticks or unticks the warning of every buff at once. Each one can also be set on its own, in the column on the right."] =
+		"Marca ou desmarca o aviso de todos os buffs de uma vez. Cada um também pode ser marcado sozinho, na coluna da direita."
+	L["Warn before it runs out (minutes)"] = "Avisar antes de acabar (minutos)"
+	L["How long before a buff ends its reminder shows again, fading in and out. Choose which buffs in the buffs window."] =
+		"Quanto tempo antes de um buff acabar o lembrete volta a aparecer, piscando devagar. Escolha os buffs na janela dos buffs."
 	L["%s ends in %s"] = "%s acaba em %s"
 	L["Buffs can't be read right now (combat or instance); this is what was last seen."] =
 		"Os buffs não podem ser lidos agora (combate ou instância); isto é o que foi visto por último."

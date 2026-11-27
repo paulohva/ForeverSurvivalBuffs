@@ -77,7 +77,7 @@ local function Build()
 	background:SetPoint("CENTER", button, "TOPLEFT", RING_X, RING_Y)
 
 	local icon = button:CreateTexture(nil, "ARTWORK")
-	icon:SetTexture(ns.ICON)
+	icon:SetTexture(ns.MINIMAP_ICON)
 	icon:SetSize(ICON_SIZE, ICON_SIZE)
 	icon:SetPoint("CENTER", button, "TOPLEFT", RING_X, RING_Y)
 	if icon.SetMask then pcall(icon.SetMask, icon, "Interface\\CharacterFrame\\TempPortraitAlphaMask") end

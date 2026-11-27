@@ -48,19 +48,30 @@ local function AddProxyCheckbox(key, name, tooltip, default, get, set)
 	Settings.CreateCheckbox(category, setting, tooltip)
 end
 
-local function AddIconSizeSlider()
-	local setting = Settings.RegisterAddOnSetting(category, "ForeverSurvivalBuffs_iconSize", "iconSize",
-		ns.db.settings, VarType("number"), L["Icon size"], ns.DEFAULTS.iconSize)
-	local options = Settings.CreateSliderOptions(20, 64, 2)
+local function AddSlider(key, name, tooltip, min, max, step, onChange)
+	local setting = Settings.RegisterAddOnSetting(category, "ForeverSurvivalBuffs_" .. key, key,
+		ns.db.settings, VarType("number"), name, ns.DEFAULTS[key])
+	local options = Settings.CreateSliderOptions(min, max, step)
 	if MinimalSliderWithSteppersMixin and MinimalSliderWithSteppersMixin.Label then
 		options:SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Right, function(v) return ("%d"):format(v) end)
 	end
-	Settings.CreateSlider(category, setting, options, L["The size of the reminder icons."])
+	Settings.CreateSlider(category, setting, options, tooltip)
 	if setting.SetValueChangedCallback then
-		setting:SetValueChangedCallback(function() ns.Reminders.Refresh() end)
+		setting:SetValueChangedCallback(onChange)
 	elseif Settings.SetOnValueChangedCallback then
-		Settings.SetOnValueChangedCallback("ForeverSurvivalBuffs_iconSize", function() ns.Reminders.Refresh() end)
+		Settings.SetOnValueChangedCallback("ForeverSurvivalBuffs_" .. key, onChange)
 	end
+end
+
+local function AddIconSizeSlider()
+	AddSlider("iconSize", L["Icon size"], L["The size of the reminder icons."], 20, 64, 2,
+		function() ns.Reminders.Refresh() end)
+end
+
+local function AddWarnSlider()
+	AddSlider("warnMinutes", L["Warn before it runs out (minutes)"],
+		L["How long before a buff ends its reminder shows again, fading in and out. Choose which buffs in the buffs window."],
+		1, 10, 1, function() ns.Tracker.Update() end)
 end
 
 local function AddButton(layout, name, buttonText, onClick, tooltip)
@@ -102,6 +113,7 @@ local function Build()
 		L["Untick to show every chosen buff and drag the row where you want it. Alt + drag always works."], true,
 		function() return s.locked end, function(value) ns.Reminders.SetLocked(value) end)
 	Try(AddIconSizeSlider)
+	Try(AddWarnSlider)
 	Try(AddButton, layout, L["Position"], L["Reset"], function() ns.Reminders.ResetPosition() end,
 		L["Put the reminders back in their first place, below the middle of the screen."])
 

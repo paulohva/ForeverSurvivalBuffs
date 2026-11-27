@@ -43,7 +43,7 @@ local function ClassTitle()
 end
 
 local function Items()
-	local items = { { header = L["Survival"] } }
+	local items = { { header = L["Survival"], right = L["Warn"] } }
 	local classHeader = false
 	for _, entry in ipairs(Tracker.entries) do
 		if not Catalog.IsDefault(entry) and not classHeader then
@@ -109,6 +109,7 @@ end
 function Window.Refresh()
 	if not (frame and frame:IsShown()) then return end
 	UpdateTabs()
+	frame.WarnAll:SetChecked(Tracker.AllWarn())
 	scrollBox:SetDataProvider(CreateDataProvider(Items()), ScrollBoxConstants and ScrollBoxConstants.RetainScrollPosition)
 end
 
@@ -149,6 +150,18 @@ local function InitRow(row, item)
 	row.Check:SetScript("OnClick", function(self)
 		Tracker.SetChosen(entry, self:GetChecked(), editing)
 	end)
+	row.Warn:SetChecked(Tracker.WarnOn(entry))
+	row.Warn:SetScript("OnClick", function(self)
+		Tracker.SetWarn(entry, self:GetChecked())
+	end)
+	row.Warn:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:AddLine(L["Warn before it runs out"], 1, 0.82, 0)
+		GameTooltip:AddLine(L["The reminder shows again, fading in and out, %d min before this buff ends (set the time in the options)."]
+			:format(Tracker.WarnSeconds() / 60), 1, 1, 1, true)
+		GameTooltip:Show()
+	end)
+	row.Warn:SetScript("OnLeave", function() GameTooltip:Hide() end)
 	row:EnableMouse(true)
 	row:SetScript("OnEnter", RowTooltip)
 	row:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -156,6 +169,7 @@ end
 
 local function InitHeader(row, item)
 	row.Text:SetText(item.header)
+	if row.Right then row.Right:SetText(item.right or "") end
 end
 
 local function Build()
@@ -211,6 +225,46 @@ local function Build()
 
 	CreateTabs()
 
+	-- below the list: warn before every buff runs out (or none)
+	local warnAll = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
+	warnAll:SetSize(24, 24)
+	warnAll:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 6, 1)
+	local warnText = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+	warnText:SetPoint("LEFT", warnAll, "RIGHT", 2, 1)
+	warnText:SetText(L["Warn before every buff runs out"])
+	warnAll:SetScript("OnClick", function(self) Tracker.SetWarnAll(self:GetChecked()) end)
+	warnAll:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_TOP")
+		GameTooltip:AddLine(L["Warn before every buff runs out"], 1, 0.82, 0)
+		GameTooltip:AddLine(L["Ticks or unticks the warning of every buff at once. Each one can also be set on its own, in the column on the right."],
+			1, 1, 1, true)
+		GameTooltip:Show()
+	end)
+	warnAll:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	frame.WarnAll = warnAll
+
+	-- the gear: the options (closing this window, which would cover them)
+	local gear = CreateFrame("Button", nil, frame)
+	gear:SetSize(18, 18)
+	local close = frame.CloseButton or _G["ForeverSurvivalBuffsFrameCloseButton"]
+	if close then
+		gear:SetPoint("RIGHT", close, "LEFT", -2, 0)
+	else
+		gear:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -28, -3)
+	end
+	gear:SetNormalTexture("Interface\\Buttons\\UI-OptionsButton")
+	gear:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
+	gear:SetScript("OnClick", function()
+		frame:Hide()
+		if not ns.Options.Open() then ns.Print(L["This client has no options panel for addons."]) end
+	end)
+	gear:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_TOP")
+		GameTooltip:AddLine(L["Settings..."], 1, 1, 1)
+		GameTooltip:Show()
+	end)
+	gear:SetScript("OnLeave", function() GameTooltip:Hide() end)
+
 	frame:SetScript("OnShow", function()
 		editing = Tracker.Profile()
 		Tracker.Update()
@@ -218,7 +272,6 @@ local function Build()
 	end)
 
 	-- the template's close button uses HideUIPanel, protected in combat: hide directly
-	local close = frame.CloseButton or _G["ForeverSurvivalBuffsFrameCloseButton"]
 	if close then close:SetScript("OnClick", function() frame:Hide() end) end
 
 	tinsert(UISpecialFrames, "ForeverSurvivalBuffsFrame")

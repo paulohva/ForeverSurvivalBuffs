@@ -4,6 +4,16 @@ All notable changes to ForeverSurvivalBuffs are listed here.
 
 ## Unreleased
 
+## 1.3.0
+
+- Warn before any buff runs out: a *Warn* column in the buffs window, one check box per buff and one
+  below the list for all of them. Only the sleeping bag is ticked at first. Weapon enhancements count
+  too.
+- How long before the end to warn is set in the options: 1 to 10 minutes (3 by default), the same
+  for every buff.
+- A gear in the buffs window opens the options.
+- The minimap button's cheese is a little smaller and centred, so the ring doesn't cut it.
+
 ## 1.2.0
 
 - Sleeping bag: 3 minutes before Well Rested runs out its reminder shows again, softly fading in
