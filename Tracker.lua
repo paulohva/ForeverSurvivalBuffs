@@ -20,7 +20,7 @@ ns.Tracker = Tracker
 Tracker.state = {}     -- [key] = { status, reason, expires }
 Tracker.entries = {}   -- every buff for this character, in display order
 Tracker.missing = {}   -- the chosen buffs that are missing, in display order
-Tracker.ending = {}    -- the chosen buffs about to run out (warning on), in display order
+Tracker.ending = {}    -- the buffs about to run out with their expiry warning on, in display order
 Tracker.secret = false -- the last update couldn't read auras
 
 -- names to look for (lower case, without accents: see Auras.Normalize)
@@ -274,6 +274,17 @@ function Tracker.SetWarnAll(on)
 	Tracker.Update()
 end
 
+-- back to the defaults for this character's class: both lists and the expiry
+-- warnings (the survival buffs reminded, the sleeping bag warned, nothing else)
+function Tracker.ResetChoices()
+	local class = Catalog.PlayerClass()
+	if not (class and ns.db) then return end
+	ns.db.classes[class] = nil
+	ns.db.instanceClasses[class] = nil
+	ns.db.warn[class] = nil
+	Tracker.Update()
+end
+
 function Tracker.AllWarn()
 	for _, entry in ipairs(Tracker.entries) do
 		if not Tracker.WarnOn(entry) then return false end
@@ -316,15 +327,16 @@ function Tracker.Update()
 	end
 	Tracker.state = state
 	Tracker.entries = entries
+	-- the reminder (missing) and the expiry warning (ending) are chosen apart
 	for _, entry in ipairs(entries) do
-		if Tracker.IsChosen(entry) then
-			local status = state[entry.key].status
-			if status == "missing" then table.insert(missing, entry)
-			elseif Tracker.IsEnding(entry) then table.insert(ending, entry) end
+		if state[entry.key].status == "missing" then
+			if Tracker.IsChosen(entry) then table.insert(missing, entry) end
+		elseif Tracker.IsEnding(entry) then
+			table.insert(ending, entry)
 		end
 	end
 	Tracker.missing = missing
-	Tracker.ending = ending   -- chosen buffs that are about to run out
+	Tracker.ending = ending
 	ns.Fire("UPDATED")
 end
 

@@ -69,9 +69,29 @@ local function AddIconSizeSlider()
 end
 
 local function AddWarnSlider()
-	AddSlider("warnMinutes", L["Warn before it runs out (minutes)"],
+	AddSlider("warnMinutes", L["Expiry warning (minutes before)"],
 		L["How long before a buff ends its reminder shows again, fading in and out. Choose which buffs in the buffs window."],
 		1, 10, 1, function() ns.Tracker.Update() end)
+end
+
+-- asks first: the choices can't be brought back
+function Options.ConfirmResetChoices()
+	local function Reset()
+		ns.Tracker.ResetChoices()
+		ns.Print(L["Buff choices back to the defaults for this class."])
+	end
+	if not (StaticPopupDialogs and StaticPopup_Show) then return Reset() end
+	StaticPopupDialogs.FOREVERSURVIVALBUFFS_RESET_CHOICES = StaticPopupDialogs.FOREVERSURVIVALBUFFS_RESET_CHOICES or {
+		text = L["Put this class's buff choices back to the defaults? Both lists and the expiry warnings are reset."],
+		button1 = YES or "Yes",
+		button2 = NO or "No",
+		OnAccept = Reset,
+		timeout = 0,
+		whileDead = true,
+		hideOnEscape = true,
+		preferredIndex = 3,
+	}
+	StaticPopup_Show("FOREVERSURVIVALBUFFS_RESET_CHOICES")
 end
 
 local function AddButton(layout, name, buttonText, onClick, tooltip)
@@ -97,6 +117,8 @@ local function Build()
 	Try(AddHeader, layout, L["Buffs"])
 	Try(AddButton, layout, L["Buffs to remind"], L["Choose..."], function() ns.BuffWindow.Toggle() end,
 		L["Tick the survival buffs, class buffs and weapon enhancements you want to be reminded of."])
+	Try(AddButton, layout, L["Default choices"], L["Reset"], function() Options.ConfirmResetChoices() end,
+		L["Back to the default buffs for this class, in both lists: Well Fed, the camp buff and the sleeping bag, with the expiry warning on the sleeping bag only."])
 
 	Try(AddHeader, layout, L["Reminders"])
 	Try(AddProxyCheckbox, "enabled", L["Show reminders"],

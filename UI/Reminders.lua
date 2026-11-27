@@ -137,19 +137,19 @@ local function CreateIcon()
 	return button
 end
 
--- what to show: the chosen buffs that are missing or about to run out; while
--- unlocked, every chosen buff that applies
+-- what to show: the chosen buffs that are missing, and the buffs with an expiry
+-- warning about to run out; while unlocked, every chosen buff that applies
 local function Shown()
 	local locked = Opts().locked
 	local list = {}
 	for _, entry in ipairs(Tracker.entries) do
-		if Tracker.IsChosen(entry) then
-			local status = Tracker.Status(entry)
-			if locked then
-				if status == "missing" or Tracker.IsEnding(entry) then table.insert(list, entry) end
-			elseif status ~= "unavailable" then
+		local status = Tracker.Status(entry)
+		if locked then
+			if (status == "missing" and Tracker.IsChosen(entry)) or Tracker.IsEnding(entry) then
 				table.insert(list, entry)
 			end
+		elseif Tracker.IsChosen(entry) and status ~= "unavailable" then
+			table.insert(list, entry)
 		end
 	end
 	return list

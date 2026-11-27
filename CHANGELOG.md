@@ -6,12 +6,20 @@ All notable changes to ForeverSurvivalBuffs are listed here.
 
 ## 1.3.0
 
-- Warn before any buff runs out: a *Warn* column in the buffs window, one check box per buff and one
-  below the list for all of them. Only the sleeping bag is ticked at first. Weapon enhancements count
+- Warn before any buff runs out: a clock on each buff in the buffs window (apart from the
+  reminder: it warns whether or not the buff is ticked), and one below the list
+  for all of them. Only the sleeping bag is ticked at first. Weapon enhancements count
   too.
 - How long before the end to warn is set in the options: 1 to 10 minutes (3 by default), the same
   for every buff.
-- A gear in the buffs window opens the options.
+- Buffs window: ticked buffs in full white, the others faded, spells not learned yet
+  left out, and the ones that can't apply say why
+  on the right; whether a buff is on you is in the row's tooltip. A gear under the title bar opens the
+  options.
+- Options: "Default choices" puts this class's buffs back to the defaults (both lists and the expiry
+  warnings), after asking.
+- The minimap button's right-click menu is just Settings and Hide minimap button, like Old Friends
+  List's (the rest is in the options; left-click opens the buffs window).
 - The minimap button's cheese is a little smaller and centred, so the ring doesn't cut it.
 
 ## 1.2.0

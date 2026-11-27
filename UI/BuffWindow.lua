@@ -37,20 +37,32 @@ local REASON = {
 	maxLevel = "Max level",
 }
 
+-- the expiry warning's clock: bright when on, faded when off
+local CLOCK = "Interface\\Icons\\INV_Misc_PocketWatch_01"
+local function ShowClock(texture, on)
+	texture:SetTexture(CLOCK)
+	texture:SetDesaturated(not on)
+	texture:SetAlpha(on and 1 or 0.35)
+end
+
 local function ClassTitle()
 	local name = ns.Safe.CallAll(UnitClass, "player")
 	return name and L["%s buffs"]:format(name) or L["Class buffs"]
 end
 
 local function Items()
-	local items = { { header = L["Survival"], right = L["Warn"] } }
+	local items = { { header = L["Survival"] } }
 	local classHeader = false
 	for _, entry in ipairs(Tracker.entries) do
-		if not Catalog.IsDefault(entry) and not classHeader then
-			classHeader = true
-			table.insert(items, { header = ClassTitle() })
+		-- spells not learned yet stay out of the list (they show up once learned)
+		local _, reason = Tracker.Status(entry)
+		if reason ~= "notLearned" then
+			if not Catalog.IsDefault(entry) and not classHeader then
+				classHeader = true
+				table.insert(items, { header = ClassTitle() })
+			end
+			table.insert(items, { entry = entry })
 		end
-		table.insert(items, { entry = entry })
 	end
 	return items
 end
@@ -109,7 +121,7 @@ end
 function Window.Refresh()
 	if not (frame and frame:IsShown()) then return end
 	UpdateTabs()
-	frame.WarnAll:SetChecked(Tracker.AllWarn())
+	ShowClock(frame.WarnAll.Clock, Tracker.AllWarn())
 	scrollBox:SetDataProvider(CreateDataProvider(Items()), ScrollBoxConstants and ScrollBoxConstants.RetainScrollPosition)
 end
 
@@ -121,11 +133,21 @@ local function StatusText(entry)
 	return L[s[1]], s[2], s[3], s[4]
 end
 
+local function FormatTime(seconds)
+	seconds = math.floor(seconds + 0.5)
+	return ("%d:%02d"):format(math.floor(seconds / 60), seconds % 60)
+end
+
 local function RowTooltip(row)
 	local entry = row.entry
 	if not entry then return end
 	GameTooltip:SetOwner(row, "ANCHOR_RIGHT")
 	GameTooltip:AddLine(Catalog.Name(entry), 1, 0.82, 0, true)
+	-- on you right now? (and for how long)
+	local text, r, g, b = StatusText(entry)
+	local left = Tracker.TimeLeft(entry)
+	if left then text = text .. "  " .. FormatTime(left) end
+	GameTooltip:AddLine(text, r, g, b)
 	GameTooltip:AddLine(Catalog.Hint(entry), 1, 1, 1, true)
 	if Tracker.secret then
 		GameTooltip:AddLine(L["Buffs can't be read right now (combat or instance); this is what was last seen."],
@@ -142,23 +164,41 @@ local function InitRow(row, item)
 	row.Icon:SetTexture(Catalog.Icon(entry))
 	row.Icon:SetDesaturated(dim)
 	row.Name:SetText(Catalog.Name(entry))
-	if dim then row.Name:SetTextColor(0.6, 0.6, 0.6) else row.Name:SetTextColor(1, 1, 1) end
-	local text, r, g, b = StatusText(entry)
-	row.Status:SetText(text)
-	row.Status:SetTextColor(r, g, b)
-	row.Check:SetChecked(Tracker.IsChosen(entry, editing))
+	local chosen = Tracker.IsChosen(entry, editing)
+	-- ticked: full white; not ticked: faded; can't apply: grey, with the reason
+	-- where the clock would be
+	local _, reason = Tracker.Status(entry)
+	row.Icon:SetAlpha((chosen and not dim) and 1 or 0.55)
+	if dim then row.Name:SetTextColor(0.5, 0.5, 0.5)
+	elseif chosen then row.Name:SetTextColor(1, 1, 1)
+	else row.Name:SetTextColor(0.65, 0.65, 0.65) end
+	row.Reason:SetText(dim and L[REASON[reason] or "Not available"] or "")
+	row.Name:SetPoint("RIGHT", row, "RIGHT", dim and -((row.Reason:GetStringWidth() or 0) + 12) or -30, 0)
+	row.Check:SetChecked(chosen)
+	row.Check:SetScript("OnEnter", function(self)
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+		GameTooltip:AddLine(L["Remind me"], 1, 0.82, 0)
+		GameTooltip:AddLine(L["An icon shows while this buff is missing."], 1, 1, 1, true)
+		GameTooltip:Show()
+	end)
+	row.Check:SetScript("OnLeave", function() GameTooltip:Hide() end)
 	row.Check:SetScript("OnClick", function(self)
 		Tracker.SetChosen(entry, self:GetChecked(), editing)
 	end)
-	row.Warn:SetChecked(Tracker.WarnOn(entry))
-	row.Warn:SetScript("OnClick", function(self)
-		Tracker.SetWarn(entry, self:GetChecked())
+	-- the clock: the expiry warning, on every buff that can apply (it works apart
+	-- from the check box: warned before it runs out, reminded or not when it's missing)
+	local warnOn = Tracker.WarnOn(entry)
+	row.Warn:SetShown(not dim)
+	ShowClock(row.Warn.Clock, warnOn)
+	row.Warn:SetScript("OnClick", function()
+		Tracker.SetWarn(entry, not Tracker.WarnOn(entry))
 	end)
 	row.Warn:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-		GameTooltip:AddLine(L["Warn before it runs out"], 1, 0.82, 0)
+		GameTooltip:AddLine(Tracker.WarnOn(entry) and L["Expiry warning: on"] or L["Expiry warning: off"], 1, 0.82, 0)
 		GameTooltip:AddLine(L["The reminder shows again, fading in and out, %d min before this buff ends (set the time in the options)."]
 			:format(Tracker.WarnSeconds() / 60), 1, 1, 1, true)
+		GameTooltip:AddLine(L["Click to turn it on or off."], 0.6, 0.6, 0.6)
 		GameTooltip:Show()
 	end)
 	row.Warn:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -167,9 +207,15 @@ local function InitRow(row, item)
 	row:SetScript("OnLeave", function() GameTooltip:Hide() end)
 end
 
+local function WarnAllTooltip(self)
+	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+	GameTooltip:AddLine(L["Expiry warning on every buff"], 1, 0.82, 0)
+	GameTooltip:AddLine(L["Turns the clock of every buff on or off at once."], 1, 1, 1, true)
+	GameTooltip:Show()
+end
+
 local function InitHeader(row, item)
 	row.Text:SetText(item.header)
-	if row.Right then row.Right:SetText(item.right or "") end
 end
 
 local function Build()
@@ -199,10 +245,13 @@ local function Build()
 	if frame.SetPortraitToAsset then pcall(frame.SetPortraitToAsset, frame, ns.PORTRAIT) end
 
 	local help = frame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-	help:SetPoint("TOPLEFT", frame, "TOPLEFT", 64, -30)
-	help:SetPoint("RIGHT", frame, "RIGHT", -12, 0)
+	-- one line, centred in the band between the title bar and the list, on the
+	-- gear's line (its centre is 43 px down)
+	help:SetPoint("LEFT", frame, "TOPLEFT", 70, -43)
+	help:SetPoint("RIGHT", frame, "TOPRIGHT", -34, -43)   -- room for the gear
 	help:SetJustifyH("LEFT")
-	help:SetText(L["Tick the buffs you want to be reminded of."])
+	help:SetText(L["Tick the buffs to be reminded of."])
+
 
 	local inset = frame.Inset or frame
 	scrollBox = CreateFrame("Frame", nil, inset, "WowScrollBoxList")
@@ -225,45 +274,54 @@ local function Build()
 
 	CreateTabs()
 
-	-- below the list: warn before every buff runs out (or none)
-	local warnAll = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
-	warnAll:SetSize(24, 24)
-	warnAll:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 6, 1)
+	-- the clock for every buff at once: in the grey strip below the list, right under
+	-- the rows' clocks (rows end 20 px short of the list's edge, for the scroll bar,
+	-- and the clock sits 6 px in from there)
+	local warnAll = CreateFrame("Button", nil, frame)
+	-- in the middle of the visible grey strip (the window's border covers its
+	-- bottom few pixels): 10 px below the list
+	warnAll:SetSize(18, 18)
+	warnAll:SetPoint("RIGHT", inset, "BOTTOMRIGHT", -26, -10)
+	warnAll.Clock = warnAll:CreateTexture(nil, "ARTWORK")
+	warnAll.Clock:SetAllPoints()
+	warnAll.Clock:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 	local warnText = frame:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
-	warnText:SetPoint("LEFT", warnAll, "RIGHT", 2, 1)
-	warnText:SetText(L["Warn before every buff runs out"])
-	warnAll:SetScript("OnClick", function(self) Tracker.SetWarnAll(self:GetChecked()) end)
-	warnAll:SetScript("OnEnter", function(self)
-		GameTooltip:SetOwner(self, "ANCHOR_TOP")
-		GameTooltip:AddLine(L["Warn before every buff runs out"], 1, 0.82, 0)
-		GameTooltip:AddLine(L["Ticks or unticks the warning of every buff at once. Each one can also be set on its own, in the column on the right."],
-			1, 1, 1, true)
-		GameTooltip:Show()
-	end)
+	warnText:SetPoint("RIGHT", warnAll, "LEFT", -5, 0)
+	warnText:SetText(L["Expiry warning on every buff"])
+	warnAll:SetScript("OnClick", function() Tracker.SetWarnAll(not Tracker.AllWarn()) end)
+	warnAll:SetScript("OnEnter", WarnAllTooltip)
 	warnAll:SetScript("OnLeave", function() GameTooltip:Hide() end)
 	frame.WarnAll = warnAll
 
-	-- the gear: the options (closing this window, which would cover them)
+	-- a small, quiet gear under the title bar, as in Old Friends List's window:
+	-- opens the options (closing this window, which would cover them)
 	local gear = CreateFrame("Button", nil, frame)
-	gear:SetSize(18, 18)
-	local close = frame.CloseButton or _G["ForeverSurvivalBuffsFrameCloseButton"]
-	if close then
-		gear:SetPoint("RIGHT", close, "LEFT", -2, 0)
-	else
-		gear:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -28, -3)
+	gear:SetSize(16, 16)
+	gear:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -12, -35)
+	local gearIcon = gear:CreateTexture(nil, "ARTWORK")
+	gearIcon:SetAllPoints()
+	if not (gearIcon.SetAtlas and pcall(gearIcon.SetAtlas, gearIcon, "QuestLog-icon-setting")) then
+		gearIcon:SetTexture("Interface\\Buttons\\UI-OptionsButton")
 	end
-	gear:SetNormalTexture("Interface\\Buttons\\UI-OptionsButton")
-	gear:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight", "ADD")
+	gearIcon:SetDesaturated(true)
+	gear:SetAlpha(0.45)
 	gear:SetScript("OnClick", function()
 		frame:Hide()
 		if not ns.Options.Open() then ns.Print(L["This client has no options panel for addons."]) end
 	end)
 	gear:SetScript("OnEnter", function(self)
-		GameTooltip:SetOwner(self, "ANCHOR_TOP")
+		self:SetAlpha(1)
+		gearIcon:SetDesaturated(false)
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
 		GameTooltip:AddLine(L["Settings..."], 1, 1, 1)
 		GameTooltip:Show()
 	end)
-	gear:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	gear:SetScript("OnLeave", function(self)
+		self:SetAlpha(0.45)
+		gearIcon:SetDesaturated(true)
+		GameTooltip:Hide()
+	end)
+	local close = frame.CloseButton or _G["ForeverSurvivalBuffsFrameCloseButton"]
 
 	frame:SetScript("OnShow", function()
 		editing = Tracker.Profile()
