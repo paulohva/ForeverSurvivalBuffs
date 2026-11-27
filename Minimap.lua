@@ -38,25 +38,16 @@ local function FillTooltip(tooltip)
 	tooltip:AddLine(L["Right-click: options"], 0.5, 0.5, 0.5)
 end
 
+-- right-click: the options (everything else lives there) and hiding the button,
+-- like Old Friends List's (left-click opens the buffs window, so it isn't repeated here)
 function MinimapButton.OpenMenu(owner)
 	if not (MenuUtil and MenuUtil.CreateContextMenu) then
 		if ns.Options then ns.Options.Open() end
 		return
 	end
-	local s = ns.db.settings
 	MenuUtil.CreateContextMenu(owner, function(_, root)
 		root:CreateTitle(ns.NAME)
-		root:CreateButton(L["Choose your buffs..."], function() ns.BuffWindow.Toggle() end)
-		root:CreateCheckbox(L["Show reminders"], function() return s.enabled end,
-			function() ns.SetEnabled(not s.enabled) end)
-		root:CreateCheckbox(L["Hide in combat"], function() return s.hideInCombat end,
-			function()
-				s.hideInCombat = not s.hideInCombat
-				ns.Reminders.Refresh()
-			end)
-		root:CreateCheckbox(L["Unlock to move"], function() return not s.locked end,
-			function() ns.Reminders.SetLocked(not s.locked) end)
-		root:CreateButton(L["Settings..."], function() ns.Options.Open() end)
+		root:CreateButton(SETTINGS or L["Settings..."], function() ns.Options.Open() end)
 		root:CreateButton(L["Hide minimap button"], function() MinimapButton.SetShown(false) end)
 	end)
 end
@@ -77,7 +68,7 @@ local function Build()
 	background:SetPoint("CENTER", button, "TOPLEFT", RING_X, RING_Y)
 
 	local icon = button:CreateTexture(nil, "ARTWORK")
-	icon:SetTexture(ns.ICON)
+	icon:SetTexture(ns.MINIMAP_ICON)
 	icon:SetSize(ICON_SIZE, ICON_SIZE)
 	icon:SetPoint("CENTER", button, "TOPLEFT", RING_X, RING_Y)
 	if icon.SetMask then pcall(icon.SetMask, icon, "Interface\\CharacterFrame\\TempPortraitAlphaMask") end

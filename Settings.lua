@@ -48,19 +48,50 @@ local function AddProxyCheckbox(key, name, tooltip, default, get, set)
 	Settings.CreateCheckbox(category, setting, tooltip)
 end
 
-local function AddIconSizeSlider()
-	local setting = Settings.RegisterAddOnSetting(category, "ForeverSurvivalBuffs_iconSize", "iconSize",
-		ns.db.settings, VarType("number"), L["Icon size"], ns.DEFAULTS.iconSize)
-	local options = Settings.CreateSliderOptions(20, 64, 2)
+local function AddSlider(key, name, tooltip, min, max, step, onChange)
+	local setting = Settings.RegisterAddOnSetting(category, "ForeverSurvivalBuffs_" .. key, key,
+		ns.db.settings, VarType("number"), name, ns.DEFAULTS[key])
+	local options = Settings.CreateSliderOptions(min, max, step)
 	if MinimalSliderWithSteppersMixin and MinimalSliderWithSteppersMixin.Label then
 		options:SetLabelFormatter(MinimalSliderWithSteppersMixin.Label.Right, function(v) return ("%d"):format(v) end)
 	end
-	Settings.CreateSlider(category, setting, options, L["The size of the reminder icons."])
+	Settings.CreateSlider(category, setting, options, tooltip)
 	if setting.SetValueChangedCallback then
-		setting:SetValueChangedCallback(function() ns.Reminders.Refresh() end)
+		setting:SetValueChangedCallback(onChange)
 	elseif Settings.SetOnValueChangedCallback then
-		Settings.SetOnValueChangedCallback("ForeverSurvivalBuffs_iconSize", function() ns.Reminders.Refresh() end)
+		Settings.SetOnValueChangedCallback("ForeverSurvivalBuffs_" .. key, onChange)
 	end
+end
+
+local function AddIconSizeSlider()
+	AddSlider("iconSize", L["Icon size"], L["The size of the reminder icons."], 20, 64, 2,
+		function() ns.Reminders.Refresh() end)
+end
+
+local function AddWarnSlider()
+	AddSlider("warnMinutes", L["Expiry warning (minutes before)"],
+		L["How long before a buff ends its reminder shows again, fading in and out. Choose which buffs in the buffs window."],
+		1, 10, 1, function() ns.Tracker.Update() end)
+end
+
+-- asks first: the choices can't be brought back
+function Options.ConfirmResetChoices()
+	local function Reset()
+		ns.Tracker.ResetChoices()
+		ns.Print(L["Buff choices back to the defaults for this class."])
+	end
+	if not (StaticPopupDialogs and StaticPopup_Show) then return Reset() end
+	StaticPopupDialogs.FOREVERSURVIVALBUFFS_RESET_CHOICES = StaticPopupDialogs.FOREVERSURVIVALBUFFS_RESET_CHOICES or {
+		text = L["Put this class's buff choices back to the defaults? Both lists and the expiry warnings are reset."],
+		button1 = YES or "Yes",
+		button2 = NO or "No",
+		OnAccept = Reset,
+		timeout = 0,
+		whileDead = true,
+		hideOnEscape = true,
+		preferredIndex = 3,
+	}
+	StaticPopup_Show("FOREVERSURVIVALBUFFS_RESET_CHOICES")
 end
 
 local function AddButton(layout, name, buttonText, onClick, tooltip)
@@ -86,6 +117,8 @@ local function Build()
 	Try(AddHeader, layout, L["Buffs"])
 	Try(AddButton, layout, L["Buffs to remind"], L["Choose..."], function() ns.BuffWindow.Toggle() end,
 		L["Tick the survival buffs, class buffs and weapon enhancements you want to be reminded of."])
+	Try(AddButton, layout, L["Default choices"], L["Reset"], function() Options.ConfirmResetChoices() end,
+		L["Back to the default buffs for this class, in both lists: Well Fed, the camp buff and the sleeping bag, with the expiry warning on the sleeping bag only."])
 
 	Try(AddHeader, layout, L["Reminders"])
 	Try(AddProxyCheckbox, "enabled", L["Show reminders"],
@@ -102,6 +135,7 @@ local function Build()
 		L["Untick to show every chosen buff and drag the row where you want it. Alt + drag always works."], true,
 		function() return s.locked end, function(value) ns.Reminders.SetLocked(value) end)
 	Try(AddIconSizeSlider)
+	Try(AddWarnSlider)
 	Try(AddButton, layout, L["Position"], L["Reset"], function() ns.Reminders.ResetPosition() end,
 		L["Put the reminders back in their first place, below the middle of the screen."])
 

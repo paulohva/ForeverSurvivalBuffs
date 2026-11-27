@@ -38,7 +38,7 @@ if locale == "ptBR" then
 	L["ForeverSurvivalBuffs: drag to move"] = "ForeverSurvivalBuffs: arraste para mover"
 
 	-- buffs window
-	L["Tick the buffs you want to be reminded of."] = "Marque os buffs que quer que sejam lembrados."
+	L["Tick the buffs to be reminded of."] = "Marque os buffs a lembrar."
 	L["Survival"] = "Sobrevivência"
 	L["%s buffs"] = "Buffs de %s"
 	L["Class buffs"] = "Buffs de classe"
@@ -50,6 +50,18 @@ if locale == "ptBR" then
 	L["Max level"] = "Nível máximo"
 	L["Not available"] = "Indisponível"
 	L["Ending soon"] = "Acabando"
+	L["Remind me"] = "Lembrar"
+	L["An icon shows while this buff is missing."] = "Um ícone aparece enquanto este buff faltar."
+	L["Expiry warning: on"] = "Aviso de expiração: ligado"
+	L["Expiry warning: off"] = "Aviso de expiração: desligado"
+	L["The reminder shows again, fading in and out, %d min before this buff ends (set the time in the options)."] =
+		"O lembrete volta a aparecer, piscando devagar, %d min antes deste buff acabar (o tempo é definido nas opções)."
+	L["Click to turn it on or off."] = "Clique para ligar ou desligar."
+	L["Expiry warning on every buff"] = "Aviso de expiração em todos"
+	L["Turns the clock of every buff on or off at once."] = "Liga ou desliga o relógio de todos os buffs de uma vez."
+	L["Expiry warning (minutes before)"] = "Aviso de expiração (minutos antes)"
+	L["How long before a buff ends its reminder shows again, fading in and out. Choose which buffs in the buffs window."] =
+		"Quanto tempo antes de um buff acabar o lembrete volta a aparecer, piscando devagar. Escolha os buffs na janela dos buffs."
 	L["%s ends in %s"] = "%s acaba em %s"
 	L["Buffs can't be read right now (combat or instance); this is what was last seen."] =
 		"Os buffs não podem ser lidos agora (combate ou instância); isto é o que foi visto por último."
@@ -63,10 +75,8 @@ if locale == "ptBR" then
 	-- minimap button and menu
 	L["Left-click: choose your buffs"] = "Clique esquerdo: escolher os seus buffs"
 	L["Right-click: options"] = "Clique direito: opções"
-	L["Choose your buffs..."] = "Escolher os seus buffs..."
 	L["Show reminders"] = "Mostrar lembretes"
 	L["Hide in combat"] = "Esconder em combate"
-	L["Unlock to move"] = "Destravar para mover"
 	L["Settings..."] = "Configurações..."
 	L["Hide minimap button"] = "Esconder o botão do minimapa"
 	L["Minimap button hidden. /fsb minimap brings it back."] = "Botão do minimapa escondido. /fsb minimap traz de volta."
@@ -76,6 +86,12 @@ if locale == "ptBR" then
 	L["Reminders off."] = "Lembretes desligados."
 	L["Buffs"] = "Buffs"
 	L["Buffs to remind"] = "Buffs a lembrar"
+	L["Default choices"] = "Escolhas padrão"
+	L["Back to the default buffs for this class, in both lists: Well Fed, the camp buff and the sleeping bag, with the expiry warning on the sleeping bag only."] =
+		"Volta aos buffs padrão desta classe, nas duas listas: Bem Alimentado, acampamento e saco de dormir, com o aviso de expiração só no saco de dormir."
+	L["Put this class's buff choices back to the defaults? Both lists and the expiry warnings are reset."] =
+		"Repor as escolhas de buffs desta classe no padrão? As duas listas e os avisos de expiração voltam ao início."
+	L["Buff choices back to the defaults for this class."] = "Escolhas de buffs repostas no padrão desta classe."
 	L["Choose..."] = "Escolher..."
 	L["Tick the survival buffs, class buffs and weapon enhancements you want to be reminded of."] =
 		"Marque os buffs de sobrevivência, de classe e as melhorias de arma que quer que sejam lembrados."

@@ -19,13 +19,19 @@ raids*, choose which one you change, and the addon switches between them by itse
 out. For example, class buffs only in dungeons, without the camp and the sleeping bag. Until you
 change it, the dungeon list is the same as the other one.
 
+**Warn before a buff runs out:** the clock on each buff in the buffs window (and the one below
+the list, for all of them) makes a buff's reminder show again, softly fading in and out,
+a few minutes before it ends: 3 by default, from 1 to 10 in the options. Only the sleeping bag is
+ticked at first.
+
 ## How to use
 
 - **Minimap button:** left-click opens the buffs window (tick what you want to be reminded of),
   right-click the options. Both also work from the game's AddOns menu.
 - **Move the reminders:** Alt + drag, or untick *Lock position* in the options to place them.
-- **Options:** Options > AddOns > ForeverSurvivalBuffs: show or hide the reminders, hide them in
-  combat, icon size, position, minimap button.
+- **Options:** Options > AddOns > ForeverSurvivalBuffs (or the gear in the buffs window): show or hide
+  the reminders, hide them in combat, icon size, how long before the end to warn, position, minimap
+  button.
 
 In combat and in some instances the game hides your buffs from addons. Then the addon keeps what it
 last saw, and checks again as soon as it can.

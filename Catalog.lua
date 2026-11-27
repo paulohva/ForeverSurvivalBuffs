@@ -25,7 +25,7 @@ Catalog.SLEEP_BAG_ITEM = 211527
 Catalog.SURVIVAL = {
 	{ key = "food", kind = "food" },
 	{ key = "camp", kind = "camp" },
-	{ key = "sleep", kind = "sleep", warn = 180 },   -- warn: seconds before it ends to show a fading reminder
+	{ key = "sleep", kind = "sleep" },
 }
 
 -- what each class puts on its weapons, for the label and the icon

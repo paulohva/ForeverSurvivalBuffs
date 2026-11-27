@@ -136,7 +136,18 @@ end
 
 local WEAPON_CLASS = (Enum and Enum.ItemClass and Enum.ItemClass.Weapon) or 2
 
--- true / false, or nil when there's no weapon in that slot (nothing to remind)
+-- seconds left on the enhancement in `slot` (from GetWeaponEnchantInfo), or nil
+local function WeaponTimeLeft(slot)
+	if not GetWeaponEnchantInfo then return nil end
+	local hasMain, mainMs, _, _, hasOff, offMs = Safe.CallAll(GetWeaponEnchantInfo)
+	local has, ms = hasMain, mainMs
+	if slot == 17 then has, ms = hasOff, offMs end
+	if has and type(ms) == "number" and ms > 0 then return ms / 1000 end
+	return nil
+end
+
+-- true / false, or nil when there's no weapon in that slot (nothing to remind);
+-- second result: seconds left on the enhancement, when known
 function Auras.WeaponEnhanced(slot)
 	local itemID = Safe.Call(GetInventoryItemID, "player", slot)
 	if not itemID then return nil end
@@ -146,12 +157,16 @@ function Auras.WeaponEnhanced(slot)
 
 	if C_PaperDollInfo and C_PaperDollInfo.GetTemporaryEnchantmentInfo then
 		local ok, info = pcall(C_PaperDollInfo.GetTemporaryEnchantmentInfo, slot)
-		if ok and not (issecretvalue and issecretvalue(info)) then return info ~= nil end
+		if ok and not (issecretvalue and issecretvalue(info)) then
+			if info == nil then return false end
+			return true, WeaponTimeLeft(slot)
+		end
 	end
 	if GetWeaponEnchantInfo then
 		local hasMain, _, _, _, hasOff = Safe.CallAll(GetWeaponEnchantInfo)
-		if slot == 17 then return hasOff and true or false end
-		return hasMain and true or false
+		local has = slot == 17 and hasOff or hasMain
+		if not has then return false end
+		return true, WeaponTimeLeft(slot)
 	end
 	return nil
 end

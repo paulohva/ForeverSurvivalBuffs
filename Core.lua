@@ -10,6 +10,8 @@ ns.ICON = "Interface\\AddOns\\ForeverSurvivalBuffs\\Media\\Icon"
 -- the buffs window's round portrait only shows the middle of its texture: the same
 -- cheese, smaller, with more background around it
 ns.PORTRAIT = "Interface\\AddOns\\ForeverSurvivalBuffs\\Media\\Portrait"
+-- the minimap button's ring hides the icon's edges: the cheese a little smaller, centred
+ns.MINIMAP_ICON = "Interface\\AddOns\\ForeverSurvivalBuffs\\Media\\Minimap"
 
 local DB_VERSION = 2
 
@@ -167,12 +169,13 @@ end
 -- Saved data
 --   ForeverSurvivalBuffsDB = {
 --     version, debug,
---     settings = { enabled, locked, hideInCombat, iconSize, minimapHidden, minimapAngle },
+--     settings = { enabled, locked, hideInCombat, iconSize, minimapHidden, minimapAngle, warnMinutes },
 --     position = { point, relPoint, x, y },             -- the reminders
 --     windowPosition = { point, relPoint, x, y },       -- the buffs window
 --     campIcon,                                         -- the camp buff's icon, once seen
 --     classes = { [CLASS] = { [buffKey] = true/false } },  -- the buffs chosen, per class
 --     instanceClasses = { ... },                        -- the same, for dungeons and raids
+--     warn = { [CLASS] = { [buffKey] = true/false } },  -- warn before it runs out (default: sleeping bag)
 --   }
 -- A buff missing from `classes` uses its default (on for the survival buffs, off
 -- for the class buffs), so new buffs in later versions just show up.
@@ -183,6 +186,7 @@ ns.DEFAULTS = {
 	locked = true,
 	hideInCombat = true,
 	iconSize = 32,
+	warnMinutes = 3,   -- how long before a buff ends its warning shows
 }
 
 -- 1.0.x kept the position as loose fields (point, relPoint, x, y) and a `disabled` flag
@@ -207,6 +211,7 @@ local function InitDB()
 	end
 	db.classes = type(db.classes) == "table" and db.classes or {}
 	db.instanceClasses = type(db.instanceClasses) == "table" and db.instanceClasses or {}
+	db.warn = type(db.warn) == "table" and db.warn or {}
 	ForeverSurvivalBuffsDB = db
 	ns.db = db
 end

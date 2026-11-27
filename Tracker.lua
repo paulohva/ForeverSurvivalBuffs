@@ -17,10 +17,10 @@ local Safe, Auras, Catalog = ns.Safe, ns.Auras, ns.Catalog
 local Tracker = {}
 ns.Tracker = Tracker
 
-Tracker.state = {}     -- [key] = { status, reason }
+Tracker.state = {}     -- [key] = { status, reason, expires }
 Tracker.entries = {}   -- every buff for this character, in display order
 Tracker.missing = {}   -- the chosen buffs that are missing, in display order
-Tracker.ending = {}    -- the chosen buffs about to run out (entry.warn), in display order
+Tracker.ending = {}    -- the buffs about to run out with their expiry warning on, in display order
 Tracker.secret = false -- the last update couldn't read auras
 
 -- names to look for (lower case, without accents: see Auras.Normalize)
@@ -140,32 +140,35 @@ end
 -- Is it on?
 --------------------------------------------------------------------------------
 
-local function HasSpellAura(snap, entry)
+-- each of these returns the buff's aura, or nil
+
+local function SpellAura(snap, entry)
 	for _, list in ipairs({ entry.spells, entry.also or {}, entry.ranks or {} }) do
 		for _, id in ipairs(list) do
-			if snap.byID[id] then return true end
+			if snap.byID[id] then return snap.byID[id] end
 			local name = Catalog.SpellName(id)
-			if name and snap.byNorm[Auras.Normalize(name)] then return true end
+			local aura = name and snap.byNorm[Auras.Normalize(name)]
+			if aura then return aura end
 		end
 	end
-	return false
+	return nil
 end
 
-local function HasFood(snap)
-	if snap.byID[Catalog.WELL_FED_SPELL] then return true end
+local function FoodAura(snap)
+	if snap.byID[Catalog.WELL_FED_SPELL] then return snap.byID[Catalog.WELL_FED_SPELL] end
 	local name = Catalog.SpellName(Catalog.WELL_FED_SPELL)
-	if name and snap.byName[name] then return true end
-	return Auras.FindKeyword(snap, FOOD_KEYWORDS) ~= nil
+	if name and snap.byName[name] then return snap.byName[name] end
+	return Auras.FindKeyword(snap, FOOD_KEYWORDS)
 end
 
-local function HasCamp(snap)
+local function CampAura(snap)
 	local aura = snap.byID[Catalog.CAMP_SPELL]
 	if aura then
 		-- remember the server's own icon for the reminder
 		if aura.icon and ns.db then ns.db.campIcon = aura.icon end
-		return true
+		return aura
 	end
-	return Auras.FindKeyword(snap, CAMP_KEYWORDS, CAMP_EXCEPT) ~= nil
+	return Auras.FindKeyword(snap, CAMP_KEYWORDS, CAMP_EXCEPT)
 end
 
 -- the Well Rested aura, or nil
@@ -206,22 +209,19 @@ local function Evaluate(entry, snap)
 	end
 
 	if kind == "weapon" then
-		local enhanced = Auras.WeaponEnhanced(entry.slot)
+		local enhanced, left = Auras.WeaponEnhanced(entry.slot)
 		if enhanced == nil then return "unavailable", "noWeapon" end
-		return enhanced and "active" or "missing"
+		if not enhanced then return "missing" end
+		return "active", nil, left and (Now() + left) or nil
 	end
 
-	if kind == "sleep" then
-		local aura = SleepAura(snap)
-		if not aura then return "missing" end
-		return "active", nil, aura.expires
-	end
-
-	local has
-	if kind == "food" then has = HasFood(snap)
-	elseif kind == "camp" then has = HasCamp(snap)
-	else has = HasSpellAura(snap, entry) end
-	return has and "active" or "missing"
+	local aura
+	if kind == "sleep" then aura = SleepAura(snap)
+	elseif kind == "food" then aura = FoodAura(snap)
+	elseif kind == "camp" then aura = CampAura(snap)
+	else aura = SpellAura(snap, entry) end
+	if not aura then return "missing" end
+	return "active", nil, aura.expires
 end
 
 -- seconds left on an active buff that ends, or nil
@@ -231,19 +231,85 @@ function Tracker.TimeLeft(entry)
 	return math.max(0, s.expires - Now())
 end
 
--- an active buff with a warning (entry.warn) that ends within that many seconds
+--------------------------------------------------------------------------------
+-- Warnings before a buff runs out: per class, for any buff (only the sleeping bag
+-- by default), all at the same time before the end (settings.warnMinutes).
+--------------------------------------------------------------------------------
+
+function Tracker.WarnSeconds()
+	local minutes = ns.db and ns.db.settings.warnMinutes or ns.DEFAULTS.warnMinutes
+	return minutes * 60
+end
+
+local function WarnChoices(create)
+	local class = Catalog.PlayerClass()
+	if not (class and ns.db) then return nil end
+	local choices = ns.db.warn[class]
+	if not choices and create then
+		choices = {}
+		ns.db.warn[class] = choices
+	end
+	return choices
+end
+
+function Tracker.WarnOn(entry)
+	local choices = WarnChoices(false)
+	local value = choices and choices[entry.key]
+	if value == nil then return entry.kind == "sleep" end
+	return value and true or false
+end
+
+function Tracker.SetWarn(entry, on)
+	local choices = WarnChoices(true)
+	if not choices then return end
+	choices[entry.key] = on and true or false
+	Tracker.Update()
+end
+
+-- every buff of this character at once (the window's "all" check box)
+function Tracker.SetWarnAll(on)
+	local choices = WarnChoices(true)
+	if not choices then return end
+	for _, entry in ipairs(Tracker.entries) do choices[entry.key] = on and true or false end
+	Tracker.Update()
+end
+
+-- back to the defaults for this character's class: both lists and the expiry
+-- warnings (the survival buffs reminded, the sleeping bag warned, nothing else)
+function Tracker.ResetChoices()
+	local class = Catalog.PlayerClass()
+	if not (class and ns.db) then return end
+	ns.db.classes[class] = nil
+	ns.db.instanceClasses[class] = nil
+	ns.db.warn[class] = nil
+	Tracker.Update()
+end
+
+function Tracker.AllWarn()
+	for _, entry in ipairs(Tracker.entries) do
+		if not Tracker.WarnOn(entry) then return false end
+	end
+	return #Tracker.entries > 0
+end
+
+-- an active buff with its warning on that ends within the warning time
 function Tracker.IsEnding(entry)
-	local left = entry.warn and Tracker.TimeLeft(entry)
-	return left ~= nil and left <= entry.warn
+	if not Tracker.WarnOn(entry) then return false end
+	local left = Tracker.TimeLeft(entry)
+	return left ~= nil and left <= Tracker.WarnSeconds()
 end
 
 -- look again exactly when a buff's warning starts (no game event says so)
 local warnTimers = {}
 local function ScheduleWarning(entry, expires)
-	if not (entry.warn and expires) or warnTimers[entry.key] == expires then return end
-	local delay = expires - entry.warn - Now()
+	if not (expires and Tracker.WarnOn(entry)) then return end
+	local at = expires - Tracker.WarnSeconds()
+	-- weapon end times are worked out again on each look, a few milliseconds apart
+	local scheduled = warnTimers[entry.key]
+	if scheduled and math.abs(scheduled - at) < 2 then return end
+	local delay = at - Now()
 	if delay <= 0 then return end
-	warnTimers[entry.key] = expires
+	warnTimers[entry.key] = at
 	C_Timer.After(delay + 0.1, function() Tracker.Update() end)
 end
 
@@ -261,15 +327,16 @@ function Tracker.Update()
 	end
 	Tracker.state = state
 	Tracker.entries = entries
+	-- the reminder (missing) and the expiry warning (ending) are chosen apart
 	for _, entry in ipairs(entries) do
-		if Tracker.IsChosen(entry) then
-			local status = state[entry.key].status
-			if status == "missing" then table.insert(missing, entry)
-			elseif Tracker.IsEnding(entry) then table.insert(ending, entry) end
+		if state[entry.key].status == "missing" then
+			if Tracker.IsChosen(entry) then table.insert(missing, entry) end
+		elseif Tracker.IsEnding(entry) then
+			table.insert(ending, entry)
 		end
 	end
 	Tracker.missing = missing
-	Tracker.ending = ending   -- chosen buffs that are about to run out
+	Tracker.ending = ending
 	ns.Fire("UPDATED")
 end
 

@@ -1,5 +1,8 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<!-- one buff in the buffs window: check box, icon, name and whether it's on you -->
+	<!-- one buff in the buffs window:
+	       [x] (icon) Name ............................ (clock)
+	     the check box: remind me of it; the clock (only on ticked buffs): warn before
+	     it runs out. A buff that can't apply shows why in the clock's place. -->
 	<Frame name="ForeverSurvivalBuffsRowTemplate" virtual="true">
 		<Size x="300" y="26"/>
 		<Layers>
@@ -11,16 +14,15 @@
 					</Anchors>
 					<TexCoords left="0.08" right="0.92" top="0.08" bottom="0.92"/>
 				</Texture>
-				<FontString parentKey="Status" inherits="GameFontHighlightSmall" justifyH="RIGHT" wordwrap="false">
-					<Size x="90" y="20"/>
+				<FontString parentKey="Reason" inherits="GameFontDisableSmall" justifyH="RIGHT" wordwrap="false">
 					<Anchors>
-						<Anchor point="RIGHT" x="-4" y="0"/>
+						<Anchor point="RIGHT" x="-6" y="0"/>
 					</Anchors>
 				</FontString>
 				<FontString parentKey="Name" inherits="GameFontHighlight" justifyH="LEFT" wordwrap="false">
 					<Anchors>
 						<Anchor point="LEFT" relativeKey="$parent.Icon" relativePoint="RIGHT" x="6" y="0"/>
-						<Anchor point="RIGHT" relativeKey="$parent.Status" relativePoint="LEFT" x="-4" y="0"/>
+						<Anchor point="RIGHT" x="-30" y="0"/>
 					</Anchors>
 				</FontString>
 			</Layer>
@@ -32,6 +34,19 @@
 					<Anchor point="LEFT" x="4" y="0"/>
 				</Anchors>
 			</CheckButton>
+			<Button parentKey="Warn">
+				<Size x="18" y="18"/>
+				<Anchors>
+					<Anchor point="RIGHT" x="-6" y="0"/>
+				</Anchors>
+				<Layers>
+					<Layer level="ARTWORK">
+						<Texture parentKey="Clock" setAllPoints="true">
+							<TexCoords left="0.08" right="0.92" top="0.08" bottom="0.92"/>
+						</Texture>
+					</Layer>
+				</Layers>
+			</Button>
 		</Frames>
 	</Frame>
 
