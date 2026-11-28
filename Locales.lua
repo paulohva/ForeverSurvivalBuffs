@@ -29,6 +29,8 @@ if locale == "ptBR" then
 	L["Use your Cozy Sleeping Bag for extra experience."] = "Use o seu Saco de Dormir Aconchegante para ganhar mais experiência."
 	L["Put a temporary enhancement on this weapon."] = "Aplique uma melhoria temporária nesta arma."
 	L["Cast it on yourself."] = "Lance em você mesmo."
+	L["Use one from your bags (you have %d)."] = "Use um da bolsa (você tem %d)."
+	L["None left in your bags."] = "Não tem mais nenhum na bolsa."
 
 	-- reminders
 	L["Missing: %s"] = "Falta: %s"
@@ -42,6 +44,8 @@ if locale == "ptBR" then
 	L["Survival"] = "Sobrevivência"
 	L["%s buffs"] = "Buffs de %s"
 	L["Class buffs"] = "Buffs de classe"
+	L["Alchemy"] = "Alquimia"
+	L["None in bags"] = "Nenhum na bolsa"
 	L["Active"] = "Ativo"
 	L["Missing"] = "Faltando"
 	L["Not learned"] = "Não aprendido"
@@ -93,8 +97,8 @@ if locale == "ptBR" then
 		"Repor as escolhas de buffs desta classe no padrão? As duas listas e os avisos de expiração voltam ao início."
 	L["Buff choices back to the defaults for this class."] = "Escolhas de buffs repostas no padrão desta classe."
 	L["Choose..."] = "Escolher..."
-	L["Tick the survival buffs, class buffs and weapon enhancements you want to be reminded of."] =
-		"Marque os buffs de sobrevivência, de classe e as melhorias de arma que quer que sejam lembrados."
+	L["Tick the survival buffs, class buffs, weapon enhancements and potions you want to be reminded of."] =
+		"Marque os buffs de sobrevivência, de classe, as melhorias de arma e as poções que quer que sejam lembrados."
 	L["Reminders"] = "Lembretes"
 	L["Show an icon for each chosen buff you're missing."] = "Mostra um ícone para cada buff escolhido que estiver faltando."
 	L["Hide the reminders during a fight. In combat the game doesn't let addons see your buffs anyway."] =

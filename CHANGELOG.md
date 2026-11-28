@@ -4,6 +4,13 @@ All notable changes to ForeverSurvivalBuffs are listed here.
 
 ## Unreleased
 
+## 1.4.0
+
+- Alchemy: the elixirs, flasks and protection potions in your bags show up in the buffs window,
+  in their own section, to be ticked like any other buff. The reminder shows while the buff is
+  off and you still have one to use; with none left the row stays (greyed, "None in bags") as long
+  as it's ticked. The expiry warning works on them too.
+
 ## 1.3.0
 
 - Warn before any buff runs out: a clock on each buff in the buffs window (apart from the

@@ -11,6 +11,9 @@ shows when you have them all.
   Lightning Shield and more. Group versions (Arcane Brilliance, Prayer of Fortitude...) count too.
 - **Weapon enhancements**: sharpening stones, weightstones, wizard and mana oils, poisons and shaman
   imbues, for your main hand and off hand.
+- **Alchemy**: the elixirs, flasks and protection potions in your bags (Elixir of the Mongoose,
+  Flask of the Titans, Greater Fire Protection Potion...). Only the ones you carry show up; the
+  reminder shows while the buff is off and you still have one.
 
 Choices are kept per class. Any default can be turned off.
 

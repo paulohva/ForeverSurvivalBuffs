@@ -116,7 +116,7 @@ local function Build()
 
 	Try(AddHeader, layout, L["Buffs"])
 	Try(AddButton, layout, L["Buffs to remind"], L["Choose..."], function() ns.BuffWindow.Toggle() end,
-		L["Tick the survival buffs, class buffs and weapon enhancements you want to be reminded of."])
+		L["Tick the survival buffs, class buffs, weapon enhancements and potions you want to be reminded of."])
 	Try(AddButton, layout, L["Default choices"], L["Reset"], function() Options.ConfirmResetChoices() end,
 		L["Back to the default buffs for this class, in both lists: Well Fed, the camp buff and the sleeping bag, with the expiry warning on the sleeping bag only."])
 

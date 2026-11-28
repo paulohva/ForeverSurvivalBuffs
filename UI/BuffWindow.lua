@@ -1,7 +1,8 @@
 --------------------------------------------------------------------------------
 -- The buffs window: every buff this character can be reminded of, each with a
--- check box. The survival buffs come ticked; the class buffs and weapon
--- enhancements are ticked by the player. Choices are kept per class, in two
+-- check box. The survival buffs come ticked; the class buffs, weapon
+-- enhancements and alchemy (the elixirs and flasks in the bags) are ticked by
+-- the player. Choices are kept per class, in two
 -- lists: one for dungeons and raids, one for everywhere else (the tabs below).
 -- Opened from the minimap button, the AddOns menu, a reminder's right-click or /fsb.
 --------------------------------------------------------------------------------
@@ -35,6 +36,7 @@ local REASON = {
 	noWeapon = "No weapon",
 	noBag = "No sleeping bag",
 	maxLevel = "Max level",
+	noItem = "None in bags",
 }
 
 -- the expiry warning's clock: bright when on, faded when off
@@ -50,16 +52,29 @@ local function ClassTitle()
 	return name and L["%s buffs"]:format(name) or L["Class buffs"]
 end
 
+-- the window's sections, in the order of Tracker.entries
+local function Section(entry)
+	if Catalog.IsDefault(entry) then return "survival" end
+	if entry.kind == "potion" then return "alchemy" end
+	return "class"
+end
+
+local function SectionTitle(section)
+	if section == "survival" then return L["Survival"] end
+	if section == "alchemy" then return L["Alchemy"] end
+	return ClassTitle()
+end
+
 local function Items()
-	local items = { { header = L["Survival"] } }
-	local classHeader = false
+	local items, section = {}, nil
 	for _, entry in ipairs(Tracker.entries) do
 		-- spells not learned yet stay out of the list (they show up once learned)
 		local _, reason = Tracker.Status(entry)
 		if reason ~= "notLearned" then
-			if not Catalog.IsDefault(entry) and not classHeader then
-				classHeader = true
-				table.insert(items, { header = ClassTitle() })
+			local s = Section(entry)
+			if s ~= section then
+				section = s
+				table.insert(items, { header = SectionTitle(s) })
 			end
 			table.insert(items, { entry = entry })
 		end
