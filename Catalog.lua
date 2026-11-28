@@ -189,11 +189,115 @@ function Catalog.ClassList(class)
 	return out
 end
 
--- every entry for this character: survival first, then the class
+--------------------------------------------------------------------------------
+-- Alchemy: the elixirs, flasks and protection potions whose buff lasts (10 min or
+-- more). Only the ones in the bags can be chosen, plus the ones already chosen
+-- (greyed out while there are none left). The buff itself, its name and icon come
+-- from the game (the item's use spell), so nothing here needs translating.
+-- Besides these, any item the game calls an elixir or a flask counts too.
+--------------------------------------------------------------------------------
+
+Catalog.ALCHEMY = {
+	-- elixirs
+	2454, 2457, 2458, 3382, 3383, 3388, 3389, 3390, 3391, 3825, 3826, 3828, 5996, 5997, 6373,
+	6662, 8827, 8949, 8951, 9088, 9154, 9155, 9179, 9187, 9206, 9224, 9233, 9264, 10592, 13445,
+	13447, 13452, 13453, 13454, 17708, 18294, 20004, 20007, 21546,
+	-- flasks
+	13510, 13511, 13512, 13513,
+	-- protection potions
+	6048, 6049, 6050, 6051, 6052, 13456, 13457, 13458, 13459, 13461,
+}
+
+local ALCHEMY = {}
+for _, id in ipairs(Catalog.ALCHEMY) do ALCHEMY[id] = true end
+
+local CONSUMABLE = (Enum and Enum.ItemClass and Enum.ItemClass.Consumable) or 0
+local ELIXIR, FLASK = 2, 3                  -- consumable subclasses
+local NOT_A_BUFF = { [9197] = true }        -- Elixir of Dream Vision
+
+local function IsAlchemy(id)
+	if ALCHEMY[id] then return true end
+	if NOT_A_BUFF[id] then return false end
+	local getInstant = (C_Item and C_Item.GetItemInfoInstant) or GetItemInfoInstant
+	local classID, subclassID = select(6, Safe.CallAll(getInstant, id))
+	return classID == CONSUMABLE and (subclassID == ELIXIR or subclassID == FLASK)
+end
+
+-- how many are in the bags (not the bank)
+function Catalog.ItemCount(id)
+	local count = (C_Item and C_Item.GetItemCount and Safe.Call(C_Item.GetItemCount, id))
+		or (GetItemCount and Safe.Call(GetItemCount, id))
+	return count or 0
+end
+
+-- the buff the item gives: its spell's name and ID (nil until the game knows the item)
+function Catalog.ItemSpell(id)
+	local fn = (C_Item and C_Item.GetItemSpell) or GetItemSpell
+	return Safe.CallAll(fn, id)
+end
+
+function Catalog.ItemName(id)
+	local name = (C_Item and C_Item.GetItemNameByID and Safe.Call(C_Item.GetItemNameByID, id))
+		or (GetItemInfo and Safe.Call(GetItemInfo, id))
+	if not name and C_Item and C_Item.RequestLoadItemDataByID then
+		pcall(C_Item.RequestLoadItemDataByID, id)   -- GET_ITEM_INFO_RECEIVED looks again
+	end
+	return name
+end
+
+-- the item IDs in the bags
+local function BagItems()
+	local found = {}
+	local numSlots = (C_Container and C_Container.GetContainerNumSlots) or GetContainerNumSlots
+	local itemID = (C_Container and C_Container.GetContainerItemID) or GetContainerItemID
+	if not (numSlots and itemID) then return found end
+	for bag = 0, NUM_TOTAL_EQUIPPED_BAG_SLOTS or NUM_BAG_SLOTS or 4 do
+		for slot = 1, Safe.Call(numSlots, bag) or 0 do
+			local id = Safe.Call(itemID, bag, slot)
+			if id then found[id] = true end
+		end
+	end
+	return found
+end
+
+local potions = {}   -- one entry per item, kept between updates
+local function Potion(id)
+	potions[id] = potions[id] or { key = "potion:" .. id, kind = "potion", item = id }
+	return potions[id]
+end
+
+-- the alchemy items for this character: the ones in the bags and the ones chosen
+-- (to be reminded of, in either list, or warned), sorted by name
+function Catalog.Potions(class)
+	local ids = {}
+	for id in pairs(BagItems()) do
+		if IsAlchemy(id) then ids[id] = true end
+	end
+	local db = ns.db
+	if db and class then
+		for _, store in ipairs({ db.classes[class], db.instanceClasses[class], db.warn[class] }) do
+			for key, on in pairs(store or {}) do
+				local id = on and tonumber(tostring(key):match("^potion:(%d+)$"))
+				if id then ids[id] = true end
+			end
+		end
+	end
+	local out = {}
+	for id in pairs(ids) do table.insert(out, Potion(id)) end
+	table.sort(out, function(a, b)
+		local na, nb = Catalog.ItemName(a.item) or "", Catalog.ItemName(b.item) or ""
+		if na ~= nb then return na < nb end
+		return a.item < b.item
+	end)
+	return out
+end
+
+-- every entry for this character: survival first, then the class, then alchemy
 function Catalog.All(class)
 	local out = {}
 	for _, entry in ipairs(Catalog.SURVIVAL) do table.insert(out, entry) end
 	for _, entry in ipairs(Catalog.ClassList(class)) do table.insert(out, entry) end
+	for _, entry in ipairs(Catalog.Potions(class)) do table.insert(out, entry) end
 	return out
 end
 
@@ -231,6 +335,7 @@ function Catalog.Name(entry)
 	if entry.kind == "weapon" then
 		return ("%s (%s)"):format(L[WEAPON_STUFF[entry.stuff].label], SlotText(entry.slot))
 	end
+	if entry.kind == "potion" then return Catalog.ItemName(entry.item) or ("item " .. entry.item) end
 	-- rank 1 of each spell, then the learned ranks whose name is different
 	-- ("Inteligência Arcana / Intelecto Arcano")
 	local names, seen = {}, {}
@@ -262,6 +367,7 @@ function Catalog.Icon(entry)
 		return (stuff.item and ItemIcon(stuff.item)) or (stuff.spell and Catalog.SpellIcon(stuff.spell))
 			or "Interface\\Icons\\INV_Stone_SharpeningStone_01"
 	end
+	if entry.kind == "potion" then return ItemIcon(entry.item) or "Interface\\Icons\\INV_Potion_01" end
 	for i = #entry.spells, 1, -1 do
 		if ns.Tracker and ns.Tracker.KnowsSpell(entry.spells[i]) then return Catalog.SpellIcon(entry.spells[i]) end
 	end
@@ -274,5 +380,10 @@ function Catalog.Hint(entry)
 	if entry.kind == "camp" then return L["Rest at a campfire until you get the one-hour camp buff."] end
 	if entry.kind == "sleep" then return L["Use your Cozy Sleeping Bag for extra experience."] end
 	if entry.kind == "weapon" then return L["Put a temporary enhancement on this weapon."] end
+	if entry.kind == "potion" then
+		local count = Catalog.ItemCount(entry.item)
+		if count == 0 then return L["None left in your bags."] end
+		return L["Use one from your bags (you have %d)."]:format(count)
+	end
 	return L["Cast it on yourself."]
 end

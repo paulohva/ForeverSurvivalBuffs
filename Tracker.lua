@@ -6,7 +6,7 @@
 --   "missing"      it isn't (a reminder shows if the buff is chosen)
 --   "unknown"      auras were secret since login, so it can't be told yet
 --   "unavailable"  it can't apply right now (`reason`: notLearned, noWeapon,
---                  noBag, maxLevel)
+--                  noBag, maxLevel, noItem)
 -- While the game keeps auras secret (combat, some instances) the aura-based
 -- statuses stay as they were last seen.
 --------------------------------------------------------------------------------
@@ -179,6 +179,17 @@ local function SleepAura(snap)
 	return Auras.FindKeyword(snap, SLEEP_KEYWORDS)
 end
 
+-- an elixir's or flask's buff: by its spell's ID or name, or by the item's name
+local function PotionAura(snap, entry)
+	local spellName, spellID = Catalog.ItemSpell(entry.item)
+	if spellID and snap.byID[spellID] then return snap.byID[spellID] end
+	for _, name in ipairs({ spellName or false, Catalog.ItemName(entry.item) or false }) do
+		local aura = name and snap.byNorm[Auras.Normalize(name)]
+		if aura then return aura end
+	end
+	return nil
+end
+
 local function Now() return Safe.Call(GetTime) or 0 end
 
 -- status, reason, expires
@@ -200,6 +211,19 @@ local function Evaluate(entry, snap)
 		if AtMaxLevel() then return "unavailable", "maxLevel" end
 	elseif kind == "spell" then
 		if not KnowsAny(entry) then return "unavailable", "notLearned" end
+	elseif kind == "potion" then
+		-- on you counts even with none left; missing only while there's one to use
+		local status, reason, expires
+		if snap then
+			local aura = PotionAura(snap, entry)
+			if aura then return "active", nil, aura.expires end
+			status = "missing"
+		else
+			status, reason, expires = LastSeen(entry)
+			if status == "active" then return status, reason, expires end
+		end
+		if Catalog.ItemCount(entry.item) == 0 then return "unavailable", "noItem" end
+		return status
 	end
 
 	-- while the game hides auras, keep what was last seen (weapons too, to be safe)
@@ -358,6 +382,7 @@ for _, event in ipairs({
 	"PLAYER_ENTERING_WORLD", "PLAYER_EQUIPMENT_CHANGED", "PLAYER_REGEN_ENABLED", "PLAYER_REGEN_DISABLED",
 	"PLAYER_DEAD", "PLAYER_ALIVE", "PLAYER_UNGHOST", "BAG_UPDATE_DELAYED", "SPELLS_CHANGED",
 	"PLAYER_LEVEL_UP", "TOYS_UPDATED", "ZONE_CHANGED_NEW_AREA",
+	"GET_ITEM_INFO_RECEIVED",   -- an alchemy item's name, once the game has it
 }) do
 	ns.On(event, Soon)
 end
